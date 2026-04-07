@@ -12,6 +12,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     configureSlider (controls[5], "drive", "Drive");
     configureSlider (controls[6], "lfoRate", "LFO Rate");
     configureSlider (controls[7], "lfoDepth", "LFO Depth");
+    configureSlider (controls[8], "glideTime", "Glide");
 
     setSize (720, 420);
 }
@@ -61,7 +62,8 @@ void AudioPluginAudioProcessorEditor::resized()
     auto area = panelArea.reduced (12);
 
     constexpr int columns = 4;
-    const auto rowHeight = area.getHeight() / 2;
+    constexpr int rows = 3;
+    const auto rowHeight = area.getHeight() / rows;
     const auto columnWidth = area.getWidth() / columns;
 
     for (int i = 0; i < (int) controls.size(); ++i)

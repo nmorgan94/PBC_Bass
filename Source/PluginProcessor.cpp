@@ -33,10 +33,16 @@ void AudioPluginAudioProcessor::ReeseVoice::startNote (int midiNoteNumber, float
                                                        juce::SynthesiserSound*, int currentPitchWheelPosition)
 {
     level = velocity;
-    baseFrequencyHz = (float) juce::MidiMessage::getMidiNoteInHertz (midiNoteNumber);
-    oscPhaseA = 0.0f;
-    oscPhaseB = 0.5f;
-    subPhase = 0.0f;
+    targetFrequencyHz = (float) juce::MidiMessage::getMidiNoteInHertz (midiNoteNumber);
+    
+    // Always glide: don't reset currentFrequencyHz
+    // Initialize only on first note (when currentFrequencyHz is 0)
+    if (currentFrequencyHz == 0.0f)
+    {
+        currentFrequencyHz = targetFrequencyHz;
+    }
+    // Otherwise keep currentFrequencyHz and renderSample will glide to targetFrequencyHz
+    
     pitchWheelMoved (currentPitchWheelPosition);
     ampEnvelope.noteOn();
 }
@@ -96,6 +102,21 @@ void AudioPluginAudioProcessor::ReeseVoice::updateFilter()
 
 float AudioPluginAudioProcessor::ReeseVoice::renderSample()
 {
+    // Apply glide smoothing
+    const auto glideTime = owner.getFloatParam ("glideTime");
+    if (glideTime > 0.0f && std::abs (currentFrequencyHz - targetFrequencyHz) > 0.01f)
+    {
+        // Calculate glide coefficient (exponential smoothing)
+        const auto glideCoeff = 1.0f - std::exp (-1.0f / (glideTime * (float) currentSampleRate));
+        currentFrequencyHz += (targetFrequencyHz - currentFrequencyHz) * glideCoeff;
+        baseFrequencyHz = currentFrequencyHz;
+    }
+    else
+    {
+        currentFrequencyHz = targetFrequencyHz;
+        baseFrequencyHz = targetFrequencyHz;
+    }
+    
     const auto frequencyA = baseFrequencyHz * std::pow (2.0f, pitchBendSemitones / 12.0f);
     const auto frequencyB = getDetunedFrequencyHz();
     const auto subFrequency = 0.5f * frequencyA;
@@ -158,10 +179,12 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                        ),
        apvts (*this, nullptr, "Parameters", createParameterLayout())
 {
-    for (int i = 0; i < 8; ++i)
+    for (int i = 0; i < 2; ++i)
         synth.addVoice (new ReeseVoice (*this));
-
+    
     synth.addSound (new ReeseSound());
+
+    synth.setNoteStealingEnabled (true);
 }
 
 AudioPluginAudioProcessor::~AudioPluginAudioProcessor() = default;
@@ -186,6 +209,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                                     juce::NormalisableRange<float> (0.05f, 20.0f, 0.001f, 0.35f), 0.8f));
     params.push_back (std::make_unique<juce::AudioParameterFloat> ("lfoDepth", "LFO Depth",
                                                                     juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.25f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> ("glideTime", "Glide Time",
+                                                                    juce::NormalisableRange<float> (0.0f, 2.0f, 0.001f, 0.5f), 0.0f));
 
     return { params.begin(), params.end() };
 }

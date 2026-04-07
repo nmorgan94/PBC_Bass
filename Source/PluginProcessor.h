@@ -80,6 +80,8 @@ private:
         double currentSampleRate { 44100.0 };
         float level { 0.0f };
         float baseFrequencyHz { 110.0f };
+        float targetFrequencyHz { 110.0f };
+        float currentFrequencyHz { 0.0f };
         float pitchBendSemitones { 0.0f };
         float oscPhaseA { 0.0f };
         float oscPhaseB { 0.5f };

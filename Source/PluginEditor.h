@@ -29,7 +29,7 @@ private:
     // access the processor object that created it.
     AudioPluginAudioProcessor& processorRef;
 
-    std::array<SliderWithAttachment, 8> controls;
+    std::array<SliderWithAttachment, 9> controls;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };
