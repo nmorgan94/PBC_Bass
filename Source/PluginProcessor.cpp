@@ -111,11 +111,9 @@ float AudioPluginAudioProcessor::ReeseVoice::renderSample()
     if (isLegatoMode && std::abs (currentFrequencyHz - targetFrequencyHz) > 0.01f)
     {
         const auto glideTime = owner.getFloatParam ("glideTime");
-        // Use glideTime if > 0, otherwise use a fast default glide
-        const auto effectiveGlideTime = glideTime > 0.0f ? glideTime : 0.05f;
         
         // Calculate glide coefficient (exponential smoothing)
-        const auto glideCoeff = 1.0f - std::exp (-1.0f / (effectiveGlideTime * (float) currentSampleRate));
+        const auto glideCoeff = 1.0f - std::exp (-1.0f / (glideTime * (float) currentSampleRate));
         currentFrequencyHz += (targetFrequencyHz - currentFrequencyHz) * glideCoeff;
         baseFrequencyHz = currentFrequencyHz;
     }
