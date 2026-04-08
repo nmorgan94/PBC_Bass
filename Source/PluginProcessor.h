@@ -67,6 +67,7 @@ private:
         void renderNextBlock (juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples) override;
 
         void prepare (double sampleRate, int samplesPerBlock, int outputChannels);
+        void setLegatoMode (bool shouldBeLegatoMode);
 
     private:
         float renderSample();
@@ -87,9 +88,11 @@ private:
         float oscPhaseB { 0.5f };
         float subPhase { 0.0f };
         float lfoPhase { 0.0f };
+        bool isLegatoMode { false };
     };
 
     juce::Synthesiser synth;
+    int numNotesHeld { 0 };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)

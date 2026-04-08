@@ -35,16 +35,21 @@ void AudioPluginAudioProcessor::ReeseVoice::startNote (int midiNoteNumber, float
     level = velocity;
     targetFrequencyHz = (float) juce::MidiMessage::getMidiNoteInHertz (midiNoteNumber);
     
-    // Always glide: don't reset currentFrequencyHz
-    // Initialize only on first note (when currentFrequencyHz is 0)
-    if (currentFrequencyHz == 0.0f)
+    // If not in legato mode, or if this is the first note, jump to target frequency
+    if (!isLegatoMode || currentFrequencyHz == 0.0f)
     {
         currentFrequencyHz = targetFrequencyHz;
+        baseFrequencyHz = targetFrequencyHz;
     }
-    // Otherwise keep currentFrequencyHz and renderSample will glide to targetFrequencyHz
+    // Otherwise keep currentFrequencyHz and baseFrequencyHz, renderSample will glide to targetFrequencyHz
     
     pitchWheelMoved (currentPitchWheelPosition);
     ampEnvelope.noteOn();
+}
+
+void AudioPluginAudioProcessor::ReeseVoice::setLegatoMode (bool shouldBeLegatoMode)
+{
+    isLegatoMode = shouldBeLegatoMode;
 }
 
 void AudioPluginAudioProcessor::ReeseVoice::stopNote (float, bool allowTailOff)
@@ -102,12 +107,15 @@ void AudioPluginAudioProcessor::ReeseVoice::updateFilter()
 
 float AudioPluginAudioProcessor::ReeseVoice::renderSample()
 {
-    // Apply glide smoothing
-    const auto glideTime = owner.getFloatParam ("glideTime");
-    if (glideTime > 0.0f && std::abs (currentFrequencyHz - targetFrequencyHz) > 0.01f)
+    // Apply glide smoothing only in legato mode
+    if (isLegatoMode && std::abs (currentFrequencyHz - targetFrequencyHz) > 0.01f)
     {
+        const auto glideTime = owner.getFloatParam ("glideTime");
+        // Use glideTime if > 0, otherwise use a fast default glide
+        const auto effectiveGlideTime = glideTime > 0.0f ? glideTime : 0.05f;
+        
         // Calculate glide coefficient (exponential smoothing)
-        const auto glideCoeff = 1.0f - std::exp (-1.0f / (glideTime * (float) currentSampleRate));
+        const auto glideCoeff = 1.0f - std::exp (-1.0f / (effectiveGlideTime * (float) currentSampleRate));
         currentFrequencyHz += (targetFrequencyHz - currentFrequencyHz) * glideCoeff;
         baseFrequencyHz = currentFrequencyHz;
     }
@@ -179,8 +187,7 @@ AudioPluginAudioProcessor::AudioPluginAudioProcessor()
                        ),
        apvts (*this, nullptr, "Parameters", createParameterLayout())
 {
-    for (int i = 0; i < 2; ++i)
-        synth.addVoice (new ReeseVoice (*this));
+    synth.addVoice (new ReeseVoice (*this));
     
     synth.addSound (new ReeseSound());
 
@@ -327,6 +334,26 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ScopedNoDenormals noDenormals;
 
     buffer.clear();
+
+    // Track note overlaps to enable legato mode
+    // Set legato mode BEFORE processing each note based on whether notes were already held
+    for (const auto metadata : midiMessages)
+    {
+        const auto& msg = metadata.getMessage();
+
+        if (msg.isNoteOn())
+        {
+            // Enable legato only if there were already notes held before this one
+            if (auto* voice = dynamic_cast<ReeseVoice*> (synth.getVoice (0)))
+                voice->setLegatoMode (numNotesHeld > 0);
+            
+            ++numNotesHeld;
+        }
+        else if (msg.isNoteOff())
+        {
+            --numNotesHeld;
+        }
+    }
 
     synth.renderNextBlock (buffer, midiMessages, 0, buffer.getNumSamples());
 
