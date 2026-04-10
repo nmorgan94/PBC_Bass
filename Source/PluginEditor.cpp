@@ -43,7 +43,6 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     addAndMakeVisible(savePresetButton);
 
     deletePresetButton.setButtonText("-");
-    deletePresetButton.setColour(juce::TextButton::textColourOffId, juce::Colour(CustomLookAndFeel::MAGENTA));
     deletePresetButton.onClick = [this]() { deletePresetClicked(); };
     addAndMakeVisible(deletePresetButton);
     
@@ -157,20 +156,13 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
     auto panelBounds = bounds;
     auto titleX = panelBounds.getX();
     
-    // Title with mixed fonts and glow
     auto titleArea = titleBounds.withX(titleX).toFloat();
-    
-    juce::AttributedString titleGlow;
-    titleGlow.setJustification(juce::Justification::centredLeft);
-    titleGlow.append("SampleRealm: ", CustomLookAndFeel::orbitronBold().withPointHeight(28.0f), juce::Colour(0xff00d9ff).withAlpha(0.3f));
-    titleGlow.append("Reece", CustomLookAndFeel::orbitronRegular().withPointHeight(28.0f), juce::Colour(0xffff006e).withAlpha(0.3f));
-    titleGlow.draw(g, titleArea.translated(0, 1));
-    
+
     // Main title
     juce::AttributedString titleText;
     titleText.setJustification(juce::Justification::centredLeft);
-    titleText.append("SampleRealm: ", CustomLookAndFeel::orbitronBold().withPointHeight(28.0f), juce::Colour(0xff00d9ff));
-    titleText.append("Reece", CustomLookAndFeel::orbitronRegular().withPointHeight(28.0f), juce::Colour(0xffff006e));
+    titleText.append("SampleRealm: ", CustomLookAndFeel::orbitronBold().withPointHeight(28.0f), juce::Colour(CustomLookAndFeel::LIGHT_BLUE));
+    titleText.append("Reece", CustomLookAndFeel::orbitronRegular().withPointHeight(28.0f), juce::Colour(CustomLookAndFeel::LIGHT_BLUE));
     titleText.draw(g, titleArea);
 
     // Main panel with depth

@@ -19,15 +19,15 @@ public:
 
     CustomLookAndFeel()
     {
-        setColour(juce::Label::textColourId, juce::Colour(0xffa0b0ff));
+        setColour(juce::Label::textColourId, juce::Colour(LIGHT_BLUE));
         
-        setColour(juce::ComboBox::textColourId, juce::Colour(0xffa0b0ff));
-        setColour(juce::ComboBox::arrowColourId, juce::Colour(0xff00d9ff));
-        setColour(juce::ComboBox::backgroundColourId, juce::Colour(0xff1a1f2e));
-        setColour(juce::ComboBox::outlineColourId, juce::Colour(0xff2a3f5f));
+        setColour(juce::ComboBox::textColourId, juce::Colour(LIGHT_BLUE));
+        setColour(juce::ComboBox::arrowColourId, juce::Colour(CYAN));
+        setColour(juce::ComboBox::backgroundColourId, juce::Colour(DARK_BLUE_1));
+        setColour(juce::ComboBox::outlineColourId, juce::Colour(BORDER_BLUE));
         
-        setColour(juce::TextButton::buttonColourId, juce::Colour(0xff1a1f2e));
-        setColour(juce::TextButton::textColourOffId, juce::Colour(0xff00d9ff));
+        setColour(juce::TextButton::buttonColourId, juce::Colour(DARK_BLUE_1));
+        setColour(juce::TextButton::textColourOffId, juce::Colour(CYAN));
     }
 
     [[nodiscard]] static juce::FontOptions orbitronRegular()
@@ -72,15 +72,15 @@ public:
                                                         juce::PathStrokeType::rounded));
 
             // Add glow effect to value arc
-            g.setColour(juce::Colour(0xff00d9ff).withAlpha(0.3f));
-            g.strokePath(valueArc, juce::PathStrokeType(lineW + 2.0f, juce::PathStrokeType::curved,
+            g.setColour(juce::Colour(CYAN).withAlpha(0.3f));
+            g.strokePath(valueArc, juce::PathStrokeType(lineW + 0.5f, juce::PathStrokeType::curved,
                                                         juce::PathStrokeType::rounded));
         }
 
-        auto knobRadius = radius * 0.4f;
+        auto knobRadius = radius * 0.8f;
         
         // Outer ring
-        g.setColour(juce::Colour(0xff2a3f5f));
+        g.setColour(juce::Colour(BORDER_BLUE));
         g.fillEllipse(centre.x - knobRadius, centre.y - knobRadius,
                      knobRadius * 2.0f, knobRadius * 2.0f);
 
@@ -105,18 +105,18 @@ public:
         pointer.applyTransform(juce::AffineTransform::rotation(toAngle).translated(centre.x, centre.y));
 
         // Pointer glow
-        g.setColour(juce::Colour(0xff00d9ff).withAlpha(0.5f));
+        g.setColour(juce::Colour(CYAN).withAlpha(0.5f));
         g.fillPath(pointer);
         
         // Pointer solid
-        g.setColour(juce::Colour(0xff00d9ff));
+        g.setColour(juce::Colour(CYAN));
         pointer = juce::Path();
         pointer.addRectangle(-pointerThickness * 0.3f, -pointerLength, pointerThickness * 0.6f, pointerLength * 0.6f);
         pointer.applyTransform(juce::AffineTransform::rotation(toAngle).translated(centre.x, centre.y));
         g.fillPath(pointer);
 
         // Center dot
-        g.setColour(juce::Colour(0xff00d9ff));
+        g.setColour(juce::Colour(CYAN));
         g.fillEllipse(centre.x - 2.0f, centre.y - 2.0f, 4.0f, 4.0f);
     }
 
@@ -184,14 +184,14 @@ public:
     void drawPopupMenuBackground(juce::Graphics& g, int width, int height) override
     {
         // Popup background
-        juce::ColourGradient bgGradient(juce::Colour(0xff1a1f2e), 0, 0,
-                                        juce::Colour(0xff0f1419), 0, (float)height,
+        juce::ColourGradient bgGradient(juce::Colour(DARK_BLUE_1), 0, 0,
+                                        juce::Colour(DARK_BLUE_2), 0, (float)height,
                                         false);
         g.setGradientFill(bgGradient);
         g.fillAll();
 
         // Border
-        g.setColour(juce::Colour(0xff2a3f5f));
+        g.setColour(juce::Colour(BORDER_BLUE));
         g.drawRect(0, 0, width, height, 1);
     }
 
