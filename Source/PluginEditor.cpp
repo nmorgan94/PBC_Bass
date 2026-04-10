@@ -29,9 +29,33 @@ void AudioPluginAudioProcessorEditor::configureSlider (SliderWithAttachment& sli
                                                        const juce::String& paramID,
                                                        const juce::String& labelText)
 {
+    sliderControl.originalLabelText = labelText;
+    
     sliderControl.slider.setSliderStyle (juce::Slider::RotaryHorizontalVerticalDrag);
     sliderControl.slider.setTextBoxStyle (juce::Slider::NoTextBox, false, 0, 0);
     sliderControl.slider.setMouseDragSensitivity(150);
+    
+    // Set up callbacks to track active slider
+    sliderControl.slider.onDragStart = [this, &sliderControl]()
+    {
+        activeSlider = &sliderControl.slider;
+        sliderControl.label.setText(juce::String(sliderControl.slider.getValue(), 2), juce::dontSendNotification);
+    };
+    
+    sliderControl.slider.onDragEnd = [this, &sliderControl]()
+    {
+        activeSlider = nullptr;
+        sliderControl.label.setText(sliderControl.originalLabelText, juce::dontSendNotification);
+    };
+    
+    sliderControl.slider.onValueChange = [this, &sliderControl]()
+    {
+        if (activeSlider == &sliderControl.slider)
+        {
+            sliderControl.label.setText(juce::String(sliderControl.slider.getValue(), 2), juce::dontSendNotification);
+        }
+    };
+    
     addAndMakeVisible (sliderControl.slider);
 
     sliderControl.label.setText (labelText, juce::dontSendNotification);
@@ -56,8 +80,7 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 
     auto titleBounds = bounds.removeFromTop(40);
     
-    // Calculate panel bounds first to align title
-    auto panelBounds = bounds.reduced (1, 1);
+    auto panelBounds = bounds;
     auto titleX = panelBounds.getX();
     
     // Title with mixed fonts and glow

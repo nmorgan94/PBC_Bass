@@ -22,6 +22,7 @@ private:
         juce::Slider slider;
         juce::Label label;
         std::unique_ptr<SliderAttachment> attachment;
+        juce::String originalLabelText;
     };
 
     void configureSlider (SliderWithAttachment& sliderControl, const juce::String& paramID, const juce::String& labelText);
@@ -32,6 +33,7 @@ private:
 
     CustomLookAndFeel customLookAndFeel;
     std::array<SliderWithAttachment, 9> controls;
+    juce::Slider* activeSlider = nullptr;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };
