@@ -2,7 +2,7 @@
 
 namespace UIConstants
 {
-    constexpr int COMBO_BOX_WIDTH = 200;
+    constexpr int COMBO_BOX_WIDTH = 150;
     constexpr int BUTTON_SIZE = 24;
     constexpr int SPACING = 4;
 }
@@ -52,7 +52,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     
     startTimerHz (1000 / TIMER_INTERVAL_MS);
 
-    setSize (720, 420);
+    setSize (625, 420);
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
@@ -90,7 +90,7 @@ void AudioPluginAudioProcessorEditor::updateSliderLabel (SliderWithAttachment& s
     if (paramID == "oscAWave" || paramID == "oscBWave")
     {
         const int waveValue = (int)sliderControl.slider.getValue();
-        const char* waveNames[] = { "SAW", "SQUARE", "TRI" };
+        const char* waveNames[] = { "SQUARE", "SAW", "TRI" };
         sliderControl.label.setText(waveNames[waveValue], juce::dontSendNotification);
     }
     else
@@ -162,7 +162,7 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
     juce::AttributedString titleText;
     titleText.setJustification(juce::Justification::centredLeft);
     titleText.append("SampleRealm: ", CustomLookAndFeel::orbitronBold().withPointHeight(28.0f), juce::Colour(CustomLookAndFeel::LIGHT_BLUE));
-    titleText.append("Reece", CustomLookAndFeel::orbitronRegular().withPointHeight(28.0f), juce::Colour(CustomLookAndFeel::LIGHT_BLUE));
+    titleText.append("REECE", CustomLookAndFeel::orbitronRegular().withPointHeight(28.0f), juce::Colour(CustomLookAndFeel::LIGHT_BLUE));
     titleText.draw(g, titleArea);
 
     // Main panel with depth
@@ -241,19 +241,20 @@ void AudioPluginAudioProcessorEditor::resized()
     auto titleArea = bounds.removeFromTop(40);
     
     // Position preset controls and peak meter
-    auto rightArea = titleArea.removeFromRight(titleArea.getWidth() / 2);
-    
-    auto meterArea = rightArea.removeFromRight(100).reduced(4, 10);
-    peakMeter.setBounds(meterArea);
-    
-    // Add spacing
-    rightArea.removeFromRight(8);
-    
-    auto presetControlsArea = rightArea;
-    
     const int totalWidth = UIConstants::BUTTON_SIZE + UIConstants::SPACING +
                           UIConstants::COMBO_BOX_WIDTH + UIConstants::SPACING +
                           UIConstants::BUTTON_SIZE;
+    const int meterWidth = 60;
+    const int spacing = 8;
+    
+    auto rightArea = titleArea.removeFromRight(totalWidth + meterWidth + spacing);
+    
+    auto meterArea = rightArea.removeFromRight(meterWidth).reduced(4, 10);
+    peakMeter.setBounds(meterArea);
+    
+    rightArea.removeFromRight(spacing);
+    
+    auto presetControlsArea = rightArea;
     
     // Center the controls
     auto controlsBounds = presetControlsArea.withSizeKeepingCentre(totalWidth, UIConstants::BUTTON_SIZE);

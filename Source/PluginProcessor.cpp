@@ -26,8 +26,8 @@ float generateWaveform (float phase, int waveType)
 {
     switch (waveType)
     {
-        case 0: return makeBipolarSaw (phase);
-        case 1: return makeBipolarSquare (phase);
+        case 0: return makeBipolarSquare (phase);
+        case 1: return makeBipolarSaw (phase);
         case 2: return makeBipolarTriangle (phase);
         default: return makeBipolarSaw (phase);
     }
