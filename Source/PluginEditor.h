@@ -2,6 +2,7 @@
 
 #include "PluginProcessor.h"
 #include "ui/CustomLookAndFeel.h"
+#include "PresetManager.h"
 
 //==============================================================================
 class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor
@@ -32,8 +33,17 @@ private:
     AudioPluginAudioProcessor& processorRef;
 
     CustomLookAndFeel customLookAndFeel;
+    PresetManager presetManager;
     std::array<SliderWithAttachment, 9> controls;
     juce::Slider* activeSlider = nullptr;
+    
+    juce::ComboBox presetComboBox;
+    juce::TextButton savePresetButton;
+    juce::TextButton deletePresetButton;
+    
+    void updatePresetComboBox();
+    void savePresetClicked();
+    void deletePresetClicked();
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };

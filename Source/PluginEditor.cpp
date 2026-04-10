@@ -1,9 +1,15 @@
 #include "PluginEditor.h"
-#include "ui/CustomLookAndFeel.h"
+
+namespace UIConstants
+{
+    constexpr int COMBO_BOX_WIDTH = 200;
+    constexpr int BUTTON_SIZE = 24;
+    constexpr int SPACING = 4;
+}
 
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
-    : AudioProcessorEditor (&p), processorRef (p)
+    : AudioProcessorEditor (&p), processorRef (p), presetManager(p.apvts)
 {
     setLookAndFeel(&customLookAndFeel);
 
@@ -16,6 +22,29 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     configureSlider (controls[6], "lfoRate", "LFO RATE");
     configureSlider (controls[7], "lfoDepth", "LFO DEPTH");
     configureSlider (controls[8], "glideTime", "GLIDE");
+
+    presetComboBox.setTextWhenNothingSelected("Select Preset");
+    presetComboBox.onChange = [this]()
+    {
+        auto selectedId = presetComboBox.getSelectedId();
+        if (selectedId > 0)
+        {
+            auto presetName = presetComboBox.getItemText(selectedId - 1);
+            presetManager.loadPreset(presetName);
+        }
+    };
+    addAndMakeVisible(presetComboBox);
+    
+    savePresetButton.setButtonText("+");
+    savePresetButton.onClick = [this]() { savePresetClicked(); };
+    addAndMakeVisible(savePresetButton);
+
+    deletePresetButton.setButtonText("-");
+    deletePresetButton.setColour(juce::TextButton::textColourOffId, juce::Colour(CustomLookAndFeel::MAGENTA));
+    deletePresetButton.onClick = [this]() { deletePresetClicked(); };
+    addAndMakeVisible(deletePresetButton);
+    
+    updatePresetComboBox();
 
     setSize (720, 420);
 }
@@ -171,10 +200,28 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 
 void AudioPluginAudioProcessorEditor::resized()
 {
-    auto bounds = getLocalBounds().reduced (20);
-    bounds.removeFromTop (30);
+    auto bounds = getLocalBounds().reduced (3);
+    auto titleArea = bounds.removeFromTop(40);
+    
+    // Position preset controls centered in the right portion of the title area
+    auto presetControlsArea = titleArea.removeFromRight(titleArea.getWidth() / 2);
+    
+    const int totalWidth = UIConstants::BUTTON_SIZE + UIConstants::SPACING +
+                          UIConstants::COMBO_BOX_WIDTH + UIConstants::SPACING +
+                          UIConstants::BUTTON_SIZE;
+    
+    // Center the controls
+    auto controlsBounds = presetControlsArea.withSizeKeepingCentre(totalWidth, UIConstants::BUTTON_SIZE);
+    
+    savePresetButton.setBounds(controlsBounds.removeFromLeft(UIConstants::BUTTON_SIZE));
+    controlsBounds.removeFromLeft(UIConstants::SPACING);
 
-    auto panelArea = bounds.reduced (8, 2);
+    presetComboBox.setBounds(controlsBounds.removeFromLeft(UIConstants::COMBO_BOX_WIDTH));
+    controlsBounds.removeFromLeft(UIConstants::SPACING);
+    
+    deletePresetButton.setBounds(controlsBounds.removeFromLeft(UIConstants::BUTTON_SIZE));
+
+    auto panelArea = bounds;
     auto area = panelArea.reduced (12);
 
     constexpr int columns = 4;
@@ -194,5 +241,64 @@ void AudioPluginAudioProcessorEditor::resized()
 
         controls[(size_t) i].label.setBounds (cell.removeFromTop (24));
         controls[(size_t) i].slider.setBounds (cell);
+    }
+}
+
+
+void AudioPluginAudioProcessorEditor::updatePresetComboBox()
+{
+    presetComboBox.clear();
+    
+    auto presetList = presetManager.getPresetList();
+    
+    for (int i = 0; i < presetList.size(); ++i)
+    {
+        presetComboBox.addItem(presetList[i], i + 1);
+    }
+}
+
+void AudioPluginAudioProcessorEditor::savePresetClicked()
+{
+    presetManager.showSaveDialog(this, [this](bool success, juce::String presetName)
+    {
+        if (success)
+        {
+            updatePresetComboBox();
+            
+            // Select the newly saved preset
+            for (int i = 0; i < presetComboBox.getNumItems(); ++i)
+            {
+                if (presetComboBox.getItemText(i) == presetName)
+                {
+                    presetComboBox.setSelectedId(i + 1, juce::dontSendNotification);
+                    break;
+                }
+            }
+        }
+    });
+}
+
+void AudioPluginAudioProcessorEditor::deletePresetClicked()
+{
+    auto selectedId = presetComboBox.getSelectedId();
+    
+    if (selectedId > 0)
+    {
+        auto presetName = presetComboBox.getItemText(selectedId - 1);
+        
+        presetManager.showDeleteDialog(presetName, this, [this](bool success)
+        {
+            if (success)
+            {
+                updatePresetComboBox();
+                presetComboBox.setSelectedId(0, juce::dontSendNotification);
+            }
+        });
+    }
+    else
+    {
+        juce::NativeMessageBox::showMessageBoxAsync(juce::AlertWindow::InfoIcon,
+                                                    "No Preset Selected",
+                                                    "Please select a preset to delete.");
     }
 }
