@@ -13,16 +13,18 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 {
     setLookAndFeel(&customLookAndFeel);
 
-    configureSlider (controls[0], "detune", "DETUNE");
-    configureSlider (controls[1], "sub", "SUB");
-    configureSlider (controls[2], "cutoff", "CUTOFF");
-    configureSlider (controls[3], "resonance", "RESONANCE");
-    configureSlider (controls[4], "drive", "DRIVE");
-    configureSlider (controls[5], "lfoRate", "LFO RATE");
-    configureSlider (controls[6], "lfoDepth", "LFO DEPTH");
-    configureSlider (controls[7], "glideTime", "GLIDE");
-    configureSlider (controls[8], "unisonVoices", "UNISON");
-    configureSlider (controls[9], "output", "OUTPUT");
+    configureSlider (controls[0], "oscAWave", "OSC A");
+    configureSlider (controls[1], "oscBWave", "OSC B");
+    configureSlider (controls[2], "unisonVoices", "UNISON");
+    configureSlider (controls[3], "drive", "DRIVE");
+    configureSlider (controls[4], "detune", "DETUNE");
+    configureSlider (controls[5], "sub", "SUB");
+    configureSlider (controls[6], "cutoff", "CUTOFF");
+    configureSlider (controls[7], "resonance", "RESONANCE");
+    configureSlider (controls[8], "lfoRate", "LFO RATE");
+    configureSlider (controls[9], "lfoDepth", "LFO DEPTH");
+    configureSlider (controls[10], "glideTime", "GLIDE");
+    configureSlider (controls[11], "output", "OUTPUT");
 
     presetComboBox.setTextWhenNothingSelected("Select Preset");
     presetComboBox.onChange = [this]()
@@ -83,6 +85,22 @@ void AudioPluginAudioProcessorEditor::timerCallback()
     peakMeter.setClipping(clipIndicatorActive);
 }
 
+void AudioPluginAudioProcessorEditor::updateSliderLabel (SliderWithAttachment& sliderControl, const juce::String& paramID)
+{
+    // Show waveform names for oscillator wave parameters
+    if (paramID == "oscAWave" || paramID == "oscBWave")
+    {
+        const int waveValue = (int)sliderControl.slider.getValue();
+        const char* waveNames[] = { "SAW", "SQUARE", "TRI" };
+        sliderControl.label.setText(waveNames[waveValue], juce::dontSendNotification);
+    }
+    else
+    {
+        int decimals = sliderControl.slider.getNumDecimalPlacesToDisplay();
+        sliderControl.label.setText(juce::String(sliderControl.slider.getValue(), decimals), juce::dontSendNotification);
+    }
+}
+
 void AudioPluginAudioProcessorEditor::configureSlider (SliderWithAttachment& sliderControl,
                                                        const juce::String& paramID,
                                                        const juce::String& labelText)
@@ -94,11 +112,10 @@ void AudioPluginAudioProcessorEditor::configureSlider (SliderWithAttachment& sli
     sliderControl.slider.setMouseDragSensitivity(150);
     
     // Set up callbacks to track active slider
-    sliderControl.slider.onDragStart = [this, &sliderControl]()
+    sliderControl.slider.onDragStart = [this, &sliderControl, paramID]()
     {
         activeSlider = &sliderControl.slider;
-        int decimals = sliderControl.slider.getNumDecimalPlacesToDisplay();
-        sliderControl.label.setText(juce::String(sliderControl.slider.getValue(), decimals), juce::dontSendNotification);
+        updateSliderLabel(sliderControl, paramID);
     };
     
     sliderControl.slider.onDragEnd = [this, &sliderControl]()
@@ -107,13 +124,10 @@ void AudioPluginAudioProcessorEditor::configureSlider (SliderWithAttachment& sli
         sliderControl.label.setText(sliderControl.originalLabelText, juce::dontSendNotification);
     };
     
-    sliderControl.slider.onValueChange = [this, &sliderControl]()
+    sliderControl.slider.onValueChange = [this, &sliderControl, paramID]()
     {
         if (activeSlider == &sliderControl.slider)
-        {
-            int decimals = sliderControl.slider.getNumDecimalPlacesToDisplay();
-            sliderControl.label.setText(juce::String(sliderControl.slider.getValue(), decimals), juce::dontSendNotification);
-        }
+            updateSliderLabel(sliderControl, paramID);
     };
     
     addAndMakeVisible (sliderControl.slider);

@@ -30,6 +30,7 @@ private:
     };
 
     void configureSlider (SliderWithAttachment& sliderControl, const juce::String& paramID, const juce::String& labelText);
+    void updateSliderLabel (SliderWithAttachment& sliderControl, const juce::String& paramID);
 
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
@@ -37,7 +38,7 @@ private:
 
     CustomLookAndFeel customLookAndFeel;
     PresetManager presetManager;
-    std::array<SliderWithAttachment, 10> controls;
+    std::array<SliderWithAttachment, 12> controls;
     juce::Slider* activeSlider = nullptr;
     
     juce::ComboBox presetComboBox;

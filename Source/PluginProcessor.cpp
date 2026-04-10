@@ -6,9 +6,31 @@ namespace
 {
 constexpr auto twoPi = juce::MathConstants<float>::twoPi;
 
+// Waveform generation functions
 float makeBipolarSaw (float phase)
 {
     return (2.0f * phase) - 1.0f;
+}
+
+float makeBipolarSquare (float phase)
+{
+    return (phase < 0.5f) ? -1.0f : 1.0f;
+}
+
+float makeBipolarTriangle (float phase)
+{
+    return (phase < 0.5f) ? (4.0f * phase - 1.0f) : (3.0f - 4.0f * phase);
+}
+
+float generateWaveform (float phase, int waveType)
+{
+    switch (waveType)
+    {
+        case 0: return makeBipolarSaw (phase);
+        case 1: return makeBipolarSquare (phase);
+        case 2: return makeBipolarTriangle (phase);
+        default: return makeBipolarSaw (phase);
+    }
 }
 }
 
@@ -129,8 +151,9 @@ float AudioPluginAudioProcessor::ReeseVoice::renderSample()
     const auto subFrequency = 0.5f * frequencyA;
     const auto sampleRateFloat = (float) currentSampleRate;
     
-    // Get unison voices count
-    const auto unisonVoices = static_cast<size_t>(owner.apvts.getRawParameterValue ("unisonVoices")->load());
+    const auto unisonVoices = static_cast<size_t>(owner.getIntParam ("unisonVoices"));
+    const int oscAWaveType = owner.getIntParam ("oscAWave");
+    const int oscBWaveType = owner.getIntParam ("oscBWave");
     
     // Render unison oscillators
     float unisonSum = 0.0f;
@@ -152,10 +175,10 @@ float AudioPluginAudioProcessor::ReeseVoice::renderSample()
         unisonPhasesA[i] -= std::floor (unisonPhasesA[i]);
         unisonPhasesB[i] -= std::floor (unisonPhasesB[i]);
         
-        const auto sawA = makeBipolarSaw (unisonPhasesA[i]);
-        const auto sawB = makeBipolarSaw (unisonPhasesB[i]);
+        const auto waveA = generateWaveform (unisonPhasesA[i], oscAWaveType);
+        const auto waveB = generateWaveform (unisonPhasesB[i], oscBWaveType);
         
-        unisonSum += (sawA + sawB) * 0.5f;
+        unisonSum += (waveA + waveB) * 0.5f;
     }
     
     // Normalize by number of voices to prevent volume increase
@@ -245,6 +268,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                                     juce::NormalisableRange<float> (0.0f, 2.0f, 0.001f, 0.5f), 0.0f));
     params.push_back (std::make_unique<juce::AudioParameterInt> ("unisonVoices", "Unison Voices",
                                                                   1, 8, 1));
+    params.push_back (std::make_unique<juce::AudioParameterInt> ("oscAWave", "Osc A Wave",
+                                                                  0, 2, 0));
+    params.push_back (std::make_unique<juce::AudioParameterInt> ("oscBWave", "Osc B Wave",
+                                                                  0, 2, 0));
 
     return { params.begin(), params.end() };
 }
@@ -256,6 +283,15 @@ float AudioPluginAudioProcessor::getFloatParam (const juce::StringRef& paramID) 
 
     jassertfalse;
     return 0.0f;
+}
+
+int AudioPluginAudioProcessor::getIntParam (const juce::StringRef& paramID) const
+{
+    if (auto* param = dynamic_cast<juce::AudioParameterInt*>(apvts.getParameter (paramID)))
+        return param->get();
+
+    jassertfalse;
+    return 0;
 }
 
 //==============================================================================

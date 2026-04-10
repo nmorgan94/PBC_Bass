@@ -47,6 +47,7 @@ public:
     juce::AudioProcessorValueTreeState apvts;
 
     float getFloatParam (const juce::StringRef& paramID) const;
+    int getIntParam (const juce::StringRef& paramID) const;
     
     // Peak level tracking
     float getPeakLevel() const { return peakLevel.load(); }
