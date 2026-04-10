@@ -33,7 +33,8 @@ void AudioPluginAudioProcessor::ReeseVoice::startNote (int midiNoteNumber, float
                                                        juce::SynthesiserSound*, int currentPitchWheelPosition)
 {
     level = velocity;
-    targetFrequencyHz = (float) juce::MidiMessage::getMidiNoteInHertz (midiNoteNumber);
+    // Transpose down 2 octaves
+    targetFrequencyHz = (float) juce::MidiMessage::getMidiNoteInHertz (midiNoteNumber - 24);
     
     // If not in legato mode, or if this is the first note, jump to target frequency
     if (!isLegatoMode || currentFrequencyHz == 0.0f)
