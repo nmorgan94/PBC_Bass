@@ -127,22 +127,48 @@ float AudioPluginAudioProcessor::ReeseVoice::renderSample()
     const auto frequencyB = getDetunedFrequencyHz();
     const auto subFrequency = 0.5f * frequencyA;
     const auto sampleRateFloat = (float) currentSampleRate;
+    
+    // Get unison voices count
+    const auto unisonVoices = static_cast<size_t>(owner.apvts.getRawParameterValue ("unisonVoices")->load());
+    
+    // Render unison oscillators
+    float unisonSum = 0.0f;
+    
+    for (size_t i = 0; i < unisonVoices; ++i)
+    {
+        // Calculate detune offset for this voice (-50% to +50% of detune range)
+        const float voiceDetune = (unisonVoices > 1)
+            ? ((float) i / (float) (unisonVoices - 1) - 0.5f) * 2.0f
+            : 0.0f;
+        
+        const auto unisonFreqA = frequencyA * std::pow (2.0f, voiceDetune * owner.getFloatParam ("detune") / 1200.0f);
+        const auto unisonFreqB = frequencyB * std::pow (2.0f, voiceDetune * owner.getFloatParam ("detune") / 1200.0f);
+        
+        // Update phases for this unison voice
+        unisonPhasesA[i] += unisonFreqA / sampleRateFloat;
+        unisonPhasesB[i] += unisonFreqB / sampleRateFloat;
+        
+        unisonPhasesA[i] -= std::floor (unisonPhasesA[i]);
+        unisonPhasesB[i] -= std::floor (unisonPhasesB[i]);
+        
+        const auto sawA = makeBipolarSaw (unisonPhasesA[i]);
+        const auto sawB = makeBipolarSaw (unisonPhasesB[i]);
+        
+        unisonSum += (sawA + sawB) * 0.5f;
+    }
+    
+    // Normalize by number of voices to prevent volume increase
+    unisonSum /= (float) unisonVoices;
 
-    oscPhaseA += frequencyA / sampleRateFloat;
-    oscPhaseB += frequencyB / sampleRateFloat;
     subPhase += subFrequency / sampleRateFloat;
     lfoPhase += owner.getFloatParam ("lfoRate") / sampleRateFloat;
 
-    oscPhaseA -= std::floor (oscPhaseA);
-    oscPhaseB -= std::floor (oscPhaseB);
     subPhase -= std::floor (subPhase);
     lfoPhase -= std::floor (lfoPhase);
 
-    const auto sawA = makeBipolarSaw (oscPhaseA);
-    const auto sawB = makeBipolarSaw (oscPhaseB);
     const auto sub = std::sin (twoPi * subPhase) * owner.getFloatParam ("sub");
     const auto lfo = std::sin (twoPi * lfoPhase) * owner.getFloatParam ("lfoDepth");
-    const auto dry = (0.5f * (sawA + sawB)) + sub;
+    const auto dry = unisonSum + sub;
     const auto driven = std::tanh (dry * (1.0f + owner.getFloatParam ("drive") * 6.0f));
     const auto envelope = ampEnvelope.getNextSample();
 
@@ -199,7 +225,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
 
     params.push_back (std::make_unique<juce::AudioParameterFloat> ("output", "Output",
-                                                                    juce::NormalisableRange<float> (-24.0f, 6.0f, 0.1f), -6.0f));
+                                                                    juce::NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.75f));
     params.push_back (std::make_unique<juce::AudioParameterFloat> ("detune", "Detune",
                                                                     juce::NormalisableRange<float> (0.0f, 40.0f, 0.01f), 12.0f));
     params.push_back (std::make_unique<juce::AudioParameterFloat> ("sub", "Sub",
@@ -216,6 +242,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                                     juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.25f));
     params.push_back (std::make_unique<juce::AudioParameterFloat> ("glideTime", "Glide Time",
                                                                     juce::NormalisableRange<float> (0.0f, 2.0f, 0.001f, 0.5f), 0.0f));
+    params.push_back (std::make_unique<juce::AudioParameterInt> ("unisonVoices", "Unison Voices",
+                                                                  1, 8, 1));
 
     return { params.begin(), params.end() };
 }
@@ -355,7 +383,7 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     synth.renderNextBlock (buffer, midiMessages, 0, buffer.getNumSamples());
 
-    const auto outputGain = juce::Decibels::decibelsToGain (getFloatParam ("output"));
+    const auto outputGain = getFloatParam ("output");
     const auto driveTrim = juce::jmap (getFloatParam ("drive"), 1.0f, 0.75f);
     buffer.applyGain (outputGain * driveTrim);
 }

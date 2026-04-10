@@ -13,15 +13,16 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 {
     setLookAndFeel(&customLookAndFeel);
 
-    configureSlider (controls[0], "output", "OUTPUT");
-    configureSlider (controls[1], "detune", "DETUNE");
-    configureSlider (controls[2], "sub", "SUB");
-    configureSlider (controls[3], "cutoff", "CUTOFF");
-    configureSlider (controls[4], "resonance", "RESONANCE");
-    configureSlider (controls[5], "drive", "DRIVE");
-    configureSlider (controls[6], "lfoRate", "LFO RATE");
-    configureSlider (controls[7], "lfoDepth", "LFO DEPTH");
-    configureSlider (controls[8], "glideTime", "GLIDE");
+    configureSlider (controls[0], "detune", "DETUNE");
+    configureSlider (controls[1], "sub", "SUB");
+    configureSlider (controls[2], "cutoff", "CUTOFF");
+    configureSlider (controls[3], "resonance", "RESONANCE");
+    configureSlider (controls[4], "drive", "DRIVE");
+    configureSlider (controls[5], "lfoRate", "LFO RATE");
+    configureSlider (controls[6], "lfoDepth", "LFO DEPTH");
+    configureSlider (controls[7], "glideTime", "GLIDE");
+    configureSlider (controls[8], "unisonVoices", "UNISON");
+    configureSlider (controls[9], "output", "OUTPUT");
 
     presetComboBox.setTextWhenNothingSelected("Select Preset");
     presetComboBox.onChange = [this]()
@@ -68,7 +69,8 @@ void AudioPluginAudioProcessorEditor::configureSlider (SliderWithAttachment& sli
     sliderControl.slider.onDragStart = [this, &sliderControl]()
     {
         activeSlider = &sliderControl.slider;
-        sliderControl.label.setText(juce::String(sliderControl.slider.getValue(), 2), juce::dontSendNotification);
+        int decimals = sliderControl.slider.getNumDecimalPlacesToDisplay();
+        sliderControl.label.setText(juce::String(sliderControl.slider.getValue(), decimals), juce::dontSendNotification);
     };
     
     sliderControl.slider.onDragEnd = [this, &sliderControl]()
@@ -81,7 +83,8 @@ void AudioPluginAudioProcessorEditor::configureSlider (SliderWithAttachment& sli
     {
         if (activeSlider == &sliderControl.slider)
         {
-            sliderControl.label.setText(juce::String(sliderControl.slider.getValue(), 2), juce::dontSendNotification);
+            int decimals = sliderControl.slider.getNumDecimalPlacesToDisplay();
+            sliderControl.label.setText(juce::String(sliderControl.slider.getValue(), decimals), juce::dontSendNotification);
         }
     };
     

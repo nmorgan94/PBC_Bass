@@ -84,11 +84,12 @@ private:
         float targetFrequencyHz { 110.0f };
         float currentFrequencyHz { 0.0f };
         float pitchBendSemitones { 0.0f };
-        float oscPhaseA { 0.0f };
-        float oscPhaseB { 0.5f };
         float subPhase { 0.0f };
         float lfoPhase { 0.0f };
         bool isLegatoMode { false };
+        
+        std::array<float, 8> unisonPhasesA {};
+        std::array<float, 8> unisonPhasesB {};
     };
 
     juce::Synthesiser synth;
