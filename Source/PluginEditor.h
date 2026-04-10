@@ -2,10 +2,12 @@
 
 #include "PluginProcessor.h"
 #include "ui/CustomLookAndFeel.h"
+#include "ui/PeakMeter.h"
 #include "PresetManager.h"
 
 //==============================================================================
-class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor
+class AudioPluginAudioProcessorEditor final : public juce::AudioProcessorEditor,
+                                               private juce::Timer
 {
 public:
     explicit AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor&);
@@ -14,6 +16,7 @@ public:
     //==============================================================================
     void paint (juce::Graphics&) override;
     void resized() override;
+    void timerCallback() override;
 
 private:
     using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
@@ -40,10 +43,18 @@ private:
     juce::ComboBox presetComboBox;
     juce::TextButton savePresetButton;
     juce::TextButton deletePresetButton;
+    PeakMeter peakMeter;
     
     void updatePresetComboBox();
     void savePresetClicked();
     void deletePresetClicked();
+    
+    // Peak meter state
+    float currentPeakLevel { 0.0f };
+    bool clipIndicatorActive { false };
+    int clipIndicatorTimer { 0 };
+    static constexpr int CLIP_HOLD_TIME_MS = 500;
+    static constexpr int TIMER_INTERVAL_MS = 30;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessorEditor)
 };

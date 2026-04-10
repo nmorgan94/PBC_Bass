@@ -386,6 +386,24 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     const auto outputGain = getFloatParam ("output");
     const auto driveTrim = juce::jmap (getFloatParam ("drive"), 1.0f, 0.75f);
     buffer.applyGain (outputGain * driveTrim);
+    
+    // Track peak level and clipping
+    float currentPeak = 0.0f;
+    bool clipping = false;
+    constexpr float clipThreshold = 1.0f;
+    
+    for (int channel = 0; channel < buffer.getNumChannels(); ++channel)
+    {
+        const auto magnitude = buffer.getMagnitude (channel, 0, buffer.getNumSamples());
+        currentPeak = juce::jmax (currentPeak, magnitude);
+        
+        if (magnitude >= clipThreshold)
+            clipping = true;
+    }
+    
+    // Update atomic values for UI
+    peakLevel.store (currentPeak);
+    isCurrentlyClipping.store (clipping);
 }
 
 //==============================================================================

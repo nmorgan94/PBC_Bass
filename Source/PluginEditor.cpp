@@ -45,14 +45,42 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     deletePresetButton.onClick = [this]() { deletePresetClicked(); };
     addAndMakeVisible(deletePresetButton);
     
+    addAndMakeVisible(peakMeter);
+    
     updatePresetComboBox();
+    
+    startTimerHz (1000 / TIMER_INTERVAL_MS);
 
     setSize (720, 420);
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
 {
+    stopTimer();
     setLookAndFeel(nullptr);
+}
+
+void AudioPluginAudioProcessorEditor::timerCallback()
+{
+    // Update peak level with decay
+    const float newPeak = processorRef.getPeakLevel();
+    const float decayRate = 0.95f;
+    currentPeakLevel = juce::jmax (newPeak, currentPeakLevel * decayRate);
+    
+    if (processorRef.isClipping())
+    {
+        clipIndicatorActive = true;
+        clipIndicatorTimer = CLIP_HOLD_TIME_MS;
+    }
+    else if (clipIndicatorTimer > 0)
+    {
+        clipIndicatorTimer -= TIMER_INTERVAL_MS;
+        if (clipIndicatorTimer <= 0)
+            clipIndicatorActive = false;
+    }
+    
+    peakMeter.setPeakLevel(currentPeakLevel);
+    peakMeter.setClipping(clipIndicatorActive);
 }
 
 void AudioPluginAudioProcessorEditor::configureSlider (SliderWithAttachment& sliderControl,
@@ -206,8 +234,16 @@ void AudioPluginAudioProcessorEditor::resized()
     auto bounds = getLocalBounds().reduced (3);
     auto titleArea = bounds.removeFromTop(40);
     
-    // Position preset controls centered in the right portion of the title area
-    auto presetControlsArea = titleArea.removeFromRight(titleArea.getWidth() / 2);
+    // Position preset controls and peak meter
+    auto rightArea = titleArea.removeFromRight(titleArea.getWidth() / 2);
+    
+    auto meterArea = rightArea.removeFromRight(100).reduced(4, 10);
+    peakMeter.setBounds(meterArea);
+    
+    // Add spacing
+    rightArea.removeFromRight(8);
+    
+    auto presetControlsArea = rightArea;
     
     const int totalWidth = UIConstants::BUTTON_SIZE + UIConstants::SPACING +
                           UIConstants::COMBO_BOX_WIDTH + UIConstants::SPACING +

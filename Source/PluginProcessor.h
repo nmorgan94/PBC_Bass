@@ -47,6 +47,10 @@ public:
     juce::AudioProcessorValueTreeState apvts;
 
     float getFloatParam (const juce::StringRef& paramID) const;
+    
+    // Peak level tracking
+    float getPeakLevel() const { return peakLevel.load(); }
+    bool isClipping() const { return isCurrentlyClipping.load(); }
 
 private:
     struct ReeseSound final : public juce::SynthesiserSound
@@ -94,6 +98,10 @@ private:
 
     juce::Synthesiser synth;
     int numNotesHeld { 0 };
+    
+    // Peak level tracking
+    std::atomic<float> peakLevel { 0.0f };
+    std::atomic<bool> isCurrentlyClipping { false };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)
