@@ -38,7 +38,7 @@ private:
 
     CustomLookAndFeel customLookAndFeel;
     PresetManager presetManager;
-    std::array<SliderWithAttachment, 12> controls;
+    std::array<SliderWithAttachment, 16> controls;
     juce::Slider* activeSlider = nullptr;
     
     juce::ComboBox presetComboBox;

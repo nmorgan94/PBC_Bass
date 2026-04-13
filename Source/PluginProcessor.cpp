@@ -38,12 +38,7 @@ AudioPluginAudioProcessor::ReeseVoice::ReeseVoice (AudioPluginAudioProcessor& ow
     : owner (ownerProcessor)
 {
     filter.setType (juce::dsp::StateVariableTPTFilterType::lowpass);
-
-    ampEnvelopeParameters.attack = 0.01f;
-    ampEnvelopeParameters.decay = 0.08f;
-    ampEnvelopeParameters.sustain = 0.85f;
-    ampEnvelopeParameters.release = 0.2f;
-    ampEnvelope.setParameters (ampEnvelopeParameters);
+    updateEnvelope();
 }
 
 bool AudioPluginAudioProcessor::ReeseVoice::canPlaySound (juce::SynthesiserSound* sound)
@@ -128,6 +123,15 @@ void AudioPluginAudioProcessor::ReeseVoice::updateFilter()
     filter.setResonance (owner.getFloatParam ("resonance"));
 }
 
+void AudioPluginAudioProcessor::ReeseVoice::updateEnvelope()
+{
+    ampEnvelopeParameters.attack = owner.getFloatParam ("attack");
+    ampEnvelopeParameters.decay = owner.getFloatParam ("decay");
+    ampEnvelopeParameters.sustain = owner.getFloatParam ("sustain");
+    ampEnvelopeParameters.release = owner.getFloatParam ("release");
+    ampEnvelope.setParameters (ampEnvelopeParameters);
+}
+
 float AudioPluginAudioProcessor::ReeseVoice::renderSample()
 {
     // Apply glide smoothing only in legato mode
@@ -208,6 +212,7 @@ void AudioPluginAudioProcessor::ReeseVoice::renderNextBlock (juce::AudioBuffer<f
         return;
 
     updateFilter();
+    updateEnvelope();
 
     for (int sample = 0; sample < numSamples; ++sample)
     {
@@ -272,7 +277,14 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                                   0, 2, 0));
     params.push_back (std::make_unique<juce::AudioParameterInt> ("oscBWave", "Osc B Wave",
                                                                   0, 2, 0));
-
+    params.push_back (std::make_unique<juce::AudioParameterFloat> ("attack", "Attack",
+                                                                    juce::NormalisableRange<float> (0.001f, 0.1f, 0.001f, 0.5f), 0.01f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> ("decay", "Decay",
+                                                                    juce::NormalisableRange<float> (0.01f, 1.0f, 0.001f, 0.4f), 0.08f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> ("sustain", "Sustain",
+                                                                    juce::NormalisableRange<float> (0.0f, 1.0f, 0.01f), 0.85f));
+    params.push_back (std::make_unique<juce::AudioParameterFloat> ("release", "Release",
+                                                                    juce::NormalisableRange<float> (0.01f, 2.0f, 0.001f, 0.4f), 0.2f));
     return { params.begin(), params.end() };
 }
 

@@ -78,6 +78,7 @@ private:
         float renderSample();
         float getDetunedFrequencyHz() const;
         void updateFilter();
+        void updateEnvelope();
 
         AudioPluginAudioProcessor& owner;
         juce::ADSR ampEnvelope;

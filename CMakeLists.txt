@@ -4,7 +4,7 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "10.13" CACHE STRING "" FORCE)
 set(CMAKE_OSX_ARCHITECTURES "x86_64;arm64" CACHE STRING "" FORCE)
 
 # Change to your project name
-project(PBC_Bass)
+project(Reese)
 
 
 set(CMAKE_CXX_STANDARD 23)
@@ -51,7 +51,7 @@ juce_add_plugin(${PROJECT_NAME}
         PLUGIN_MANUFACTURER_CODE
           Sprm
         PLUGIN_CODE
-          Plgn
+          Rese
         VERSION 
           0.0.0
         FORMATS

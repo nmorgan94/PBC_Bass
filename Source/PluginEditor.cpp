@@ -25,6 +25,10 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     configureSlider (controls[9], "lfoDepth", "LFO DEPTH");
     configureSlider (controls[10], "glideTime", "GLIDE");
     configureSlider (controls[11], "output", "OUTPUT");
+    configureSlider (controls[12], "attack", "ATTACK");
+    configureSlider (controls[13], "decay", "DECAY");
+    configureSlider (controls[14], "sustain", "SUSTAIN");
+    configureSlider (controls[15], "release", "RELEASE");
 
     presetComboBox.setTextWhenNothingSelected("Select Preset");
     presetComboBox.onChange = [this]()
@@ -52,7 +56,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     
     startTimerHz (1000 / TIMER_INTERVAL_MS);
 
-    setSize (625, 420);
+    setSize (625, 520);
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
@@ -195,9 +199,9 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 
     // Section dividers
     auto dividerArea = panelBounds.reduced(20, 15);
-    const auto rowHeight = dividerArea.getHeight() / 3;
+    const auto rowHeight = dividerArea.getHeight() / 4;
     
-    for (int i = 1; i < 3; ++i)
+    for (int i = 1; i < 4; ++i)
     {
         auto y = dividerArea.getY() + (i * rowHeight);
         
@@ -233,6 +237,12 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
     drawCornerAccent(panelBounds.getRight() - cornerInset, panelBounds.getY() + cornerInset, true, false);
     drawCornerAccent(panelBounds.getX() + cornerInset, panelBounds.getBottom() - cornerInset, false, true);
     drawCornerAccent(panelBounds.getRight() - cornerInset, panelBounds.getBottom() - cornerInset, true, true);
+    
+    // Version text in bottom-right corner
+    g.setFont(CustomLookAndFeel::orbitronRegular().withPointHeight(9.0f));
+    g.setColour(juce::Colour(0xff00d9ff).withAlpha(0.4f));
+    auto versionArea = juce::Rectangle<int>(panelBounds.getRight() - 60, panelBounds.getBottom() - 20, 50, 12);
+    g.drawText("v" + juce::String(JucePlugin_VersionString), versionArea, juce::Justification::centredRight);
 }
 
 void AudioPluginAudioProcessorEditor::resized()
@@ -271,7 +281,7 @@ void AudioPluginAudioProcessorEditor::resized()
     auto area = panelArea.reduced (12);
 
     constexpr int columns = 4;
-    constexpr int rows = 3;
+    constexpr int rows = 4;
     const auto rowHeight = area.getHeight() / rows;
     const auto columnWidth = area.getWidth() / columns;
 
