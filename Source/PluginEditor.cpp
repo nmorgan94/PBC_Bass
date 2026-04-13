@@ -343,8 +343,13 @@ void AudioPluginAudioProcessorEditor::deletePresetClicked()
     }
     else
     {
-        juce::NativeMessageBox::showMessageBoxAsync(juce::AlertWindow::InfoIcon,
-                                                    "No Preset Selected",
-                                                    "Please select a preset to delete.");
+        auto* window = new juce::AlertWindow("No Preset Selected",
+                                             "Please select a preset to delete.",
+                                             juce::AlertWindow::NoIcon);
+        window->addButton("OK", 1, juce::KeyPress(juce::KeyPress::returnKey));
+        window->enterModalState(true, juce::ModalCallbackFunction::create([window](int)
+        {
+            delete window;
+        }), true);
     }
 }
