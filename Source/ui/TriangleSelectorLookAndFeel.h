@@ -40,12 +40,84 @@ public:
         g.setColour(juce::Colour(CYAN));
         g.strokePath(triangle, juce::PathStrokeType(2.0f));
         
-        // Draw subtle circle outline to show the rotation area
-        g.setColour(juce::Colour(BORDER_BLUE).withAlpha(0.3f));
-        g.drawEllipse(centre.x - radius, centre.y - radius, radius * 2.0f, radius * 2.0f, 1.0f);
-        
         // Center dot
         g.setColour(juce::Colour(CYAN));
         g.fillEllipse(centre.x - 2.0f, centre.y - 2.0f, 4.0f, 4.0f);
+        
+        drawWaveformSymbols(g, centre, radius);
+    }
+
+private:
+    void drawWaveformSymbols(juce::Graphics& g, juce::Point<float> centre, float radius)
+    {
+        const float symbolRadius = radius * 1.25f;
+        const float symbolSize = 8.5f;
+        
+        g.setColour(juce::Colour(CYAN).withAlpha(0.5f));
+        
+        // Draw waveform symbols at 120-degree intervals
+        // Starting at bottom-left and going clockwise: Square, Saw, Triangle
+        const float baseAngle = 5.0f * juce::MathConstants<float>::pi / 6.0f;  // 150° (bottom-left)
+        const float angleStep = juce::MathConstants<float>::pi * 2.0f / 3.0f;  // 120°
+        
+        for (int i = 0; i < 3; ++i)
+        {
+            float angle = baseAngle + (i * angleStep);
+            float x = centre.x + std::cos(angle) * symbolRadius;
+            float y = centre.y + std::sin(angle) * symbolRadius;
+            
+            // i=0: 150° (bottom-left) = Square (value 0)
+            // i=1: 270° = -90° (top) = Saw (value 1)
+            // i=2: 390° = 30° (bottom-right) = Triangle (value 2)
+            if (i == 0)
+                drawSquareWave(g, x, y, symbolSize);
+            else if (i == 1)
+                drawSawWave(g, x, y, symbolSize);
+            else
+                drawTriangleWave(g, x, y, symbolSize);
+        }
+    }
+    
+    void drawSquareWave(juce::Graphics& g, float x, float y, float size)
+    {
+        juce::Path path;
+        float halfSize = size * 0.5f;
+        float height = size * 0.4f;
+        
+        path.startNewSubPath(x - halfSize, y + height);
+        path.lineTo(x - halfSize, y - height);
+        path.lineTo(x + halfSize, y - height);
+        path.lineTo(x + halfSize, y + height);
+        
+        g.strokePath(path, juce::PathStrokeType(1.2f));
+    }
+    
+    void drawSawWave(juce::Graphics& g, float x, float y, float size)
+    {
+        juce::Path path;
+        float halfSize = size * 0.5f;
+        float height = size * 0.4f;
+        
+        path.startNewSubPath(x - halfSize, y + height);
+        path.lineTo(x, y - height);
+        path.lineTo(x, y + height);
+        path.lineTo(x + halfSize, y - height);
+        path.lineTo(x + halfSize, y + height);
+        
+        g.strokePath(path, juce::PathStrokeType(1.2f));
+    }
+    
+    void drawTriangleWave(juce::Graphics& g, float x, float y, float size)
+    {
+        juce::Path path;
+        float halfSize = size * 0.5f;
+        float height = size * 0.5f;
+        
+        path.startNewSubPath(x - halfSize, y + height);
+        path.lineTo(x, y - height);
+        path.lineTo(x + halfSize, y + height);
+        
+        g.strokePath(path, juce::PathStrokeType(1.2f));
     }
 };
+
