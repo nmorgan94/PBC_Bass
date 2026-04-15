@@ -2,6 +2,7 @@
 
 #include "PluginProcessor.h"
 #include "ui/CustomLookAndFeel.h"
+#include "ui/TriangleSelectorLookAndFeel.h"
 #include "ui/PeakMeter.h"
 #include "ui/ADSRVisualizer.h"
 #include "PresetManager.h"
@@ -38,6 +39,7 @@ private:
     AudioPluginAudioProcessor& processorRef;
 
     CustomLookAndFeel customLookAndFeel;
+    TriangleSelectorLookAndFeel triangleLookAndFeel;
     PresetManager presetManager;
     std::array<SliderWithAttachment, 16> controls;
     juce::Slider* activeSlider = nullptr;

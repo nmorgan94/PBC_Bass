@@ -16,7 +16,12 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     addAndMakeVisible(adsrVisualizer);
 
     configureSlider (controls[0], "oscAWave", "OSC A");
+    controls[0].slider.setLookAndFeel(&triangleLookAndFeel);
+    controls[0].slider.setMouseDragSensitivity(75);  
+    
     configureSlider (controls[1], "oscBWave", "OSC B");
+    controls[1].slider.setLookAndFeel(&triangleLookAndFeel);
+    controls[1].slider.setMouseDragSensitivity(75);  
     configureSlider (controls[2], "unisonVoices", "UNISON");
     configureSlider (controls[3], "drive", "DRIVE");
     configureSlider (controls[4], "detune", "DETUNE");
@@ -64,6 +69,10 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
 {
     stopTimer();
+
+    controls[0].slider.setLookAndFeel(nullptr);
+    controls[1].slider.setLookAndFeel(nullptr);
+    
     setLookAndFeel(nullptr);
 }
 
