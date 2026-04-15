@@ -3,6 +3,7 @@
 #include "PluginProcessor.h"
 #include "ui/CustomLookAndFeel.h"
 #include "ui/PeakMeter.h"
+#include "ui/ADSRVisualizer.h"
 #include "PresetManager.h"
 
 //==============================================================================
@@ -45,6 +46,7 @@ private:
     juce::TextButton savePresetButton;
     juce::TextButton deletePresetButton;
     PeakMeter peakMeter;
+    ADSRVisualizer adsrVisualizer;
     
     void updatePresetComboBox();
     void savePresetClicked();

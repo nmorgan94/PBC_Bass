@@ -9,9 +9,11 @@ namespace UIConstants
 
 //==============================================================================
 AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAudioProcessor& p)
-    : AudioProcessorEditor (&p), processorRef (p), presetManager(p.apvts)
+    : AudioProcessorEditor (&p), processorRef (p), presetManager(p.apvts), adsrVisualizer(p.apvts)
 {
     setLookAndFeel(&customLookAndFeel);
+
+    addAndMakeVisible(adsrVisualizer);
 
     configureSlider (controls[0], "oscAWave", "OSC A");
     configureSlider (controls[1], "oscBWave", "OSC B");
@@ -284,6 +286,13 @@ void AudioPluginAudioProcessorEditor::resized()
     constexpr int rows = 4;
     const auto rowHeight = area.getHeight() / rows;
     const auto columnWidth = area.getWidth() / columns;
+
+    auto adsrRowBounds = juce::Rectangle<int>(area.getX(),
+                                               area.getY() + (3 * rowHeight),
+                                               area.getWidth(),
+                                               rowHeight - 5);
+    adsrRowBounds = adsrRowBounds.withTrimmedLeft(10).withTrimmedRight(10);
+    adsrVisualizer.setBounds(adsrRowBounds);
 
     for (int i = 0; i < (int) controls.size(); ++i)
     {
