@@ -5,6 +5,7 @@
 #include "ui/TriangleSelectorLookAndFeel.h"
 #include "ui/PeakMeter.h"
 #include "ui/ADSRVisualizer.h"
+#include "ui/TransportDisplay.h"
 #include "PresetManager.h"
 
 //==============================================================================
@@ -49,6 +50,7 @@ private:
     juce::TextButton deletePresetButton;
     PeakMeter peakMeter;
     ADSRVisualizer adsrVisualizer;
+    TransportDisplay transportDisplay;
     
     void updatePresetComboBox();
     void savePresetClicked();

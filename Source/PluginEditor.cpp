@@ -58,6 +58,7 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     addAndMakeVisible(deletePresetButton);
     
     addAndMakeVisible(peakMeter);
+    addAndMakeVisible(transportDisplay);
     
     updatePresetComboBox();
     
@@ -97,6 +98,8 @@ void AudioPluginAudioProcessorEditor::timerCallback()
     
     peakMeter.setPeakLevel(currentPeakLevel);
     peakMeter.setClipping(clipIndicatorActive);
+    
+    transportDisplay.setBPM(processorRef.getCurrentBPM());
 }
 
 void AudioPluginAudioProcessorEditor::updateSliderLabel (SliderWithAttachment& sliderControl, const juce::String& paramID)
@@ -289,6 +292,8 @@ void AudioPluginAudioProcessorEditor::resized()
     deletePresetButton.setBounds(controlsBounds.removeFromLeft(UIConstants::BUTTON_SIZE));
 
     auto panelArea = bounds;
+    auto transportArea = juce::Rectangle<int>(panelArea.getX() + 15, panelArea.getBottom() - 20, 140, 12);
+    transportDisplay.setBounds(transportArea);
     auto area = panelArea.reduced (12);
 
     constexpr int columns = 4;

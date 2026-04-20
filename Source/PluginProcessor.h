@@ -52,6 +52,9 @@ public:
     // Peak level tracking
     float getPeakLevel() const { return peakLevel.load(); }
     bool isClipping() const { return isCurrentlyClipping.load(); }
+    
+    // Transport info
+    double getCurrentBPM() const { return currentBPM.load(); }
 
 private:
     struct ReeseSound final : public juce::SynthesiserSound
@@ -104,6 +107,9 @@ private:
     // Peak level tracking
     std::atomic<float> peakLevel { 0.0f };
     std::atomic<bool> isCurrentlyClipping { false };
+    
+    // Transport info tracking
+    std::atomic<double> currentBPM { 0.0 };
 
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (AudioPluginAudioProcessor)

@@ -274,9 +274,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     params.push_back (std::make_unique<juce::AudioParameterInt> ("unisonVoices", "Unison Voices",
                                                                   1, 8, 1));
     params.push_back (std::make_unique<juce::AudioParameterInt> ("oscAWave", "Osc A Wave",
-                                                                  0, 2, 0));
+                                                                  0, 2, 1));
     params.push_back (std::make_unique<juce::AudioParameterInt> ("oscBWave", "Osc B Wave",
-                                                                  0, 2, 0));
+                                                                  0, 2, 1));
     params.push_back (std::make_unique<juce::AudioParameterFloat> ("attack", "Attack",
                                                                     juce::NormalisableRange<float> (0.001f, 0.1f, 0.001f, 0.5f), 0.01f));
     params.push_back (std::make_unique<juce::AudioParameterFloat> ("decay", "Decay",
@@ -409,6 +409,16 @@ void AudioPluginAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     juce::ScopedNoDenormals noDenormals;
 
     buffer.clear();
+    
+    // Update transport info from host
+    if (auto* playHead = getPlayHead())
+    {
+        if (auto positionInfo = playHead->getPosition())
+        {
+            if (positionInfo->getBpm().hasValue())
+                currentBPM.store(*positionInfo->getBpm());
+        }
+    }
 
     // Track note overlaps to enable legato mode
     // Set legato mode BEFORE processing each note based on whether notes were already held
