@@ -48,6 +48,8 @@ public:
 
     float getFloatParam (const juce::StringRef& paramID) const;
     int getIntParam (const juce::StringRef& paramID) const;
+    bool getBoolParam (const juce::StringRef& paramID) const;
+    int getChoiceParam (const juce::StringRef& paramID) const;
     
     // Peak level tracking
     float getPeakLevel() const { return peakLevel.load(); }
@@ -82,6 +84,7 @@ private:
         float getDetunedFrequencyHz() const;
         void updateFilter();
         void updateEnvelope();
+        float getLFORate() const;
 
         AudioPluginAudioProcessor& owner;
         juce::ADSR ampEnvelope;

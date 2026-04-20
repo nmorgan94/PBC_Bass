@@ -132,6 +132,26 @@ void AudioPluginAudioProcessor::ReeseVoice::updateEnvelope()
     ampEnvelope.setParameters (ampEnvelopeParameters);
 }
 
+float AudioPluginAudioProcessor::ReeseVoice::getLFORate() const
+{
+    const bool syncEnabled = owner.getBoolParam ("lfoSync");
+    
+    if (!syncEnabled)
+        return owner.getFloatParam ("lfoRate");
+    
+    double bpm = owner.getCurrentBPM();
+    if (bpm <= 0.0)
+        bpm = 120.0;  // Default to 120 BPM if host doesn't provide tempo
+    
+    const int syncRateIndex = owner.getChoiceParam ("lfoSyncRate");
+    
+    // Note divisions: 1/16, 1/8, 1/4, 1/2, 1 Bar, 2 Bars, 4 Bars
+    const float beatsPerCycle[] = { 0.25f, 0.5f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f };
+    const float beats = beatsPerCycle[syncRateIndex];
+    
+    return static_cast<float>((bpm / 60.0) / beats);
+}
+
 float AudioPluginAudioProcessor::ReeseVoice::renderSample()
 {
     // Apply glide smoothing only in legato mode
@@ -189,7 +209,7 @@ float AudioPluginAudioProcessor::ReeseVoice::renderSample()
     unisonSum /= (float) unisonVoices;
 
     subPhase += subFrequency / sampleRateFloat;
-    lfoPhase += owner.getFloatParam ("lfoRate") / sampleRateFloat;
+    lfoPhase += getLFORate() / sampleRateFloat;
 
     subPhase -= std::floor (subPhase);
     lfoPhase -= std::floor (lfoPhase);
@@ -269,6 +289,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                                     juce::NormalisableRange<float> (0.05f, 20.0f, 0.001f, 0.35f), 0.8f));
     params.push_back (std::make_unique<juce::AudioParameterFloat> ("lfoDepth", "LFO Depth",
                                                                     juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.25f));
+    params.push_back (std::make_unique<juce::AudioParameterBool> ("lfoSync", "LFO Sync", false));
+    params.push_back (std::make_unique<juce::AudioParameterChoice> ("lfoSyncRate", "LFO Sync Rate",
+                                                                     juce::StringArray { "1/16", "1/8", "1/4", "1/2", "1 Bar", "2 Bars", "4 Bars" }, 2));
     params.push_back (std::make_unique<juce::AudioParameterFloat> ("glideTime", "Glide Time",
                                                                     juce::NormalisableRange<float> (0.0f, 2.0f, 0.001f, 0.5f), 0.0f));
     params.push_back (std::make_unique<juce::AudioParameterInt> ("unisonVoices", "Unison Voices",
@@ -301,6 +324,24 @@ int AudioPluginAudioProcessor::getIntParam (const juce::StringRef& paramID) cons
 {
     if (auto* param = dynamic_cast<juce::AudioParameterInt*>(apvts.getParameter (paramID)))
         return param->get();
+
+    jassertfalse;
+    return 0;
+}
+
+bool AudioPluginAudioProcessor::getBoolParam (const juce::StringRef& paramID) const
+{
+    if (auto* param = dynamic_cast<juce::AudioParameterBool*>(apvts.getParameter (paramID)))
+        return param->get();
+
+    jassertfalse;
+    return false;
+}
+
+int AudioPluginAudioProcessor::getChoiceParam (const juce::StringRef& paramID) const
+{
+    if (auto* param = dynamic_cast<juce::AudioParameterChoice*>(apvts.getParameter (paramID)))
+        return param->getIndex();
 
     jassertfalse;
     return 0;

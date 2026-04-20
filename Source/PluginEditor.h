@@ -34,6 +34,7 @@ private:
 
     void configureSlider (SliderWithAttachment& sliderControl, const juce::String& paramID, const juce::String& labelText);
     void updateSliderLabel (SliderWithAttachment& sliderControl, const juce::String& paramID);
+    void updateLFORateControl();
 
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
@@ -51,6 +52,9 @@ private:
     PeakMeter peakMeter;
     ADSRVisualizer adsrVisualizer;
     TransportDisplay transportDisplay;
+    
+    juce::ToggleButton lfoSyncButton;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> lfoSyncAttachment;
     
     void updatePresetComboBox();
     void savePresetClicked();

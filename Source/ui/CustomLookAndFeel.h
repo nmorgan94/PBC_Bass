@@ -293,4 +293,48 @@ public:
         return juce::Font(orbitronRegular().withHeight(14.0f));
     }
 
+    void drawToggleButton(juce::Graphics& g, juce::ToggleButton& button,
+                         bool shouldDrawButtonAsHighlighted, bool shouldDrawButtonAsDown) override
+    {
+        auto bounds = button.getLocalBounds().toFloat();
+        auto cornerSize = 3.0f;
+        const bool isOn = button.getToggleState();
+        
+        // Background gradient
+        if (isOn)
+        {
+            juce::ColourGradient gradient(juce::Colour(CYAN).withAlpha(0.3f), 0, 0,
+                                         juce::Colour(CYAN).withAlpha(0.15f), 0, bounds.getHeight(), false);
+            g.setGradientFill(gradient);
+            g.fillRoundedRectangle(bounds, cornerSize);
+            
+            // Border
+            g.setColour(juce::Colour(CYAN));
+            g.drawRoundedRectangle(bounds.reduced(0.5f), cornerSize, 1.0f);
+        }
+        else
+        {
+            juce::ColourGradient gradient(juce::Colour(DARK_BLUE_1), 0, 0,
+                                         juce::Colour(DARK_BLUE_2), 0, bounds.getHeight(), false);
+            g.setGradientFill(gradient);
+            g.fillRoundedRectangle(bounds, cornerSize);
+            
+            // Border
+            g.setColour(juce::Colour(BORDER_BLUE));
+            g.drawRoundedRectangle(bounds.reduced(0.5f), cornerSize, 1.0f);
+        }
+        
+        // Highlight on hover/down
+        if (shouldDrawButtonAsHighlighted || shouldDrawButtonAsDown)
+        {
+            g.setColour(juce::Colour(CYAN).withAlpha(0.1f));
+            g.fillRoundedRectangle(bounds, cornerSize);
+        }
+        
+        // Text
+        g.setFont(orbitronBold().withHeight(9.0f));
+        g.setColour(isOn ? juce::Colour(CYAN) : juce::Colour(LIGHT_BLUE).withAlpha(0.6f));
+        g.drawText(button.getButtonText(), bounds, juce::Justification::centred);
+    }
+
 };

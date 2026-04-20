@@ -28,7 +28,14 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     configureSlider (controls[5], "sub", "SUB");
     configureSlider (controls[6], "cutoff", "CUTOFF");
     configureSlider (controls[7], "resonance", "RESONANCE");
-    configureSlider (controls[8], "lfoRate", "LFO RATE");
+    configureSlider (controls[8], "lfoRate", "LFO RATE"); 
+
+    lfoSyncButton.setButtonText("SYNC");
+    lfoSyncButton.onClick = [this]() { updateLFORateControl(); };
+    lfoSyncAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
+        processorRef.apvts, "lfoSync", lfoSyncButton);
+    addAndMakeVisible(lfoSyncButton);
+    
     configureSlider (controls[9], "lfoDepth", "LFO DEPTH");
     configureSlider (controls[10], "glideTime", "GLIDE");
     configureSlider (controls[11], "output", "OUTPUT");
@@ -111,10 +118,30 @@ void AudioPluginAudioProcessorEditor::updateSliderLabel (SliderWithAttachment& s
         const char* waveNames[] = { "SQUARE", "SAW", "TRI" };
         sliderControl.label.setText(waveNames[waveValue], juce::dontSendNotification);
     }
+    else if (paramID == "lfoSyncRate")
+    {
+        const int syncRateValue = (int)sliderControl.slider.getValue();
+        const char* syncRateNames[] = { "1/16", "1/8", "1/4", "1/2", "1 BAR", "2 BARS", "4 BARS" };
+        sliderControl.label.setText(syncRateNames[syncRateValue], juce::dontSendNotification);
+    }
     else
     {
         int decimals = sliderControl.slider.getNumDecimalPlacesToDisplay();
         sliderControl.label.setText(juce::String(sliderControl.slider.getValue(), decimals), juce::dontSendNotification);
+    }
+}
+
+void AudioPluginAudioProcessorEditor::updateLFORateControl()
+{
+    const bool syncEnabled = lfoSyncButton.getToggleState();
+    
+    if (syncEnabled)
+    {
+        configureSlider(controls[8], "lfoSyncRate", "LFO SYNC");
+    }
+    else
+    {
+        configureSlider(controls[8], "lfoRate", "LFO RATE");
     }
 }
 
@@ -321,6 +348,15 @@ void AudioPluginAudioProcessorEditor::resized()
         controls[(size_t) i].label.setBounds (cell.removeFromTop (24));
         controls[(size_t) i].slider.setBounds (cell);
     }
+    
+    auto lfoRateSliderBounds = controls[8].slider.getBounds();
+    auto syncButtonBounds = juce::Rectangle<int>(
+        lfoRateSliderBounds.getRight() - 40,
+        lfoRateSliderBounds.getBottom() - 18,
+        40,
+        18
+    );
+    lfoSyncButton.setBounds(syncButtonBounds);
 }
 
 
