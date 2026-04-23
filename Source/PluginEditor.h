@@ -24,6 +24,26 @@ public:
 private:
     using SliderAttachment = juce::AudioProcessorValueTreeState::SliderAttachment;
 
+    enum ControlIndex
+    {
+        OSC_A_WAVE = 0,
+        OSC_B_WAVE,
+        SUB,
+        DETUNE,
+        GLIDE_TIME,
+        UNISON_VOICES,
+        DRIVE,
+        OUTPUT,
+        CUTOFF,
+        RESONANCE,
+        LFO_RATE,
+        LFO_DEPTH,
+        ATTACK,
+        DECAY,
+        SUSTAIN,
+        RELEASE
+    };
+
     struct SliderWithAttachment
     {
         juce::Slider slider;

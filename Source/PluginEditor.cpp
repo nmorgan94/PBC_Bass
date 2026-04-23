@@ -2,7 +2,7 @@
 
 namespace UIConstants
 {
-    constexpr int COMBO_BOX_WIDTH = 150;
+    constexpr int COMBO_BOX_WIDTH = 160;
     constexpr int BUTTON_SIZE = 24;
     constexpr int SPACING = 4;
 }
@@ -15,20 +15,20 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
 
     addAndMakeVisible(adsrVisualizer);
 
-    configureSlider (controls[0], "oscAWave", "OSC A");
-    controls[0].slider.setLookAndFeel(&triangleLookAndFeel);
-    controls[0].slider.setMouseDragSensitivity(75);  
+    configureSlider (controls[OSC_A_WAVE], "oscAWave", "OSC A");
+    controls[OSC_A_WAVE].slider.setLookAndFeel(&triangleLookAndFeel);
+    controls[OSC_A_WAVE].slider.setMouseDragSensitivity(75);
     
-    configureSlider (controls[1], "oscBWave", "OSC B");
-    controls[1].slider.setLookAndFeel(&triangleLookAndFeel);
-    controls[1].slider.setMouseDragSensitivity(75);  
-    configureSlider (controls[2], "unisonVoices", "UNISON");
-    configureSlider (controls[3], "drive", "DRIVE");
-    configureSlider (controls[4], "detune", "DETUNE");
-    configureSlider (controls[5], "sub", "SUB");
-    configureSlider (controls[6], "cutoff", "CUTOFF");
-    configureSlider (controls[7], "resonance", "RESONANCE");
-    configureSlider (controls[8], "lfoRate", "LFO RATE"); 
+    configureSlider (controls[OSC_B_WAVE], "oscBWave", "OSC B");
+    controls[OSC_B_WAVE].slider.setLookAndFeel(&triangleLookAndFeel);
+    controls[OSC_B_WAVE].slider.setMouseDragSensitivity(75);
+    configureSlider (controls[UNISON_VOICES], "unisonVoices", "UNISON");
+    configureSlider (controls[DRIVE], "drive", "DRIVE");
+    configureSlider (controls[DETUNE], "detune", "DETUNE");
+    configureSlider (controls[SUB], "sub", "SUB");
+    configureSlider (controls[CUTOFF], "cutoff", "CUTOFF");
+    configureSlider (controls[RESONANCE], "resonance", "RESONANCE");
+    configureSlider (controls[LFO_RATE], "lfoRate", "LFO RATE");
 
     lfoSyncButton.setButtonText("SYNC");
     lfoSyncButton.onClick = [this]() { updateLFORateControl(); };
@@ -36,13 +36,13 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
         processorRef.apvts, "lfoSync", lfoSyncButton);
     addAndMakeVisible(lfoSyncButton);
     
-    configureSlider (controls[9], "lfoDepth", "LFO DEPTH");
-    configureSlider (controls[10], "glideTime", "GLIDE");
-    configureSlider (controls[11], "output", "OUTPUT");
-    configureSlider (controls[12], "attack", "ATTACK");
-    configureSlider (controls[13], "decay", "DECAY");
-    configureSlider (controls[14], "sustain", "SUSTAIN");
-    configureSlider (controls[15], "release", "RELEASE");
+    configureSlider (controls[LFO_DEPTH], "lfoDepth", "LFO DEPTH");
+    configureSlider (controls[GLIDE_TIME], "glideTime", "GLIDE");
+    configureSlider (controls[OUTPUT], "output", "OUTPUT");
+    configureSlider (controls[ATTACK], "attack", "ATTACK");
+    configureSlider (controls[DECAY], "decay", "DECAY");
+    configureSlider (controls[SUSTAIN], "sustain", "SUSTAIN");
+    configureSlider (controls[RELEASE], "release", "RELEASE");
 
     presetComboBox.setTextWhenNothingSelected("Select Preset");
     presetComboBox.onChange = [this]()
@@ -71,15 +71,15 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
     
     startTimerHz (1000 / TIMER_INTERVAL_MS);
 
-    setSize (625, 520);
+    setSize (625, 300);
 }
 
 AudioPluginAudioProcessorEditor::~AudioPluginAudioProcessorEditor()
 {
     stopTimer();
 
-    controls[0].slider.setLookAndFeel(nullptr);
-    controls[1].slider.setLookAndFeel(nullptr);
+    controls[OSC_A_WAVE].slider.setLookAndFeel(nullptr);
+    controls[OSC_B_WAVE].slider.setLookAndFeel(nullptr);
     
     setLookAndFeel(nullptr);
 }
@@ -137,11 +137,11 @@ void AudioPluginAudioProcessorEditor::updateLFORateControl()
     
     if (syncEnabled)
     {
-        configureSlider(controls[8], "lfoSyncRate", "LFO SYNC");
+        configureSlider(controls[LFO_RATE], "lfoSyncRate", "LFO SYNC");
     }
     else
     {
-        configureSlider(controls[8], "lfoRate", "LFO RATE");
+        configureSlider(controls[LFO_RATE], "lfoRate", "LFO RATE");
     }
 }
 
@@ -195,21 +195,17 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
     g.fillAll();
 
     auto bounds = getLocalBounds().reduced (3);
-
-    auto titleBounds = bounds.removeFromTop(40);
+    auto headerArea = bounds.removeFromTop(40);
     
-    auto panelBounds = bounds;
-    auto titleX = panelBounds.getX();
-    
-    auto titleArea = titleBounds.withX(titleX).toFloat();
-
     // Main title
     juce::AttributedString titleText;
     titleText.setJustification(juce::Justification::centredLeft);
     titleText.append("SampleRealm: ", CustomLookAndFeel::orbitronBold().withPointHeight(28.0f), juce::Colour(CustomLookAndFeel::LIGHT_BLUE));
     titleText.append("REECE", CustomLookAndFeel::orbitronRegular().withPointHeight(28.0f), juce::Colour(CustomLookAndFeel::LIGHT_BLUE));
-    titleText.draw(g, titleArea);
+    titleText.draw(g, headerArea.toFloat());
 
+    auto panelBounds = bounds;
+    
     // Main panel with depth
     
     // Outer glow
@@ -240,9 +236,9 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 
     // Section dividers
     auto dividerArea = panelBounds.reduced(20, 15);
-    const auto rowHeight = dividerArea.getHeight() / 4;
+    const auto rowHeight = dividerArea.getHeight() / 2;
     
-    for (int i = 1; i < 4; ++i)
+    for (int i = 1; i < 2; ++i)
     {
         auto y = dividerArea.getY() + (i * rowHeight);
         
@@ -273,7 +269,7 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
         g.strokePath(accent, juce::PathStrokeType(2.0f));
     };
     
-    auto cornerInset = 25.0f;
+    auto cornerInset = 8.0f;
     drawCornerAccent(panelBounds.getX() + cornerInset, panelBounds.getY() + cornerInset, false, false);
     drawCornerAccent(panelBounds.getRight() - cornerInset, panelBounds.getY() + cornerInset, true, false);
     drawCornerAccent(panelBounds.getX() + cornerInset, panelBounds.getBottom() - cornerInset, false, true);
@@ -289,50 +285,43 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
 void AudioPluginAudioProcessorEditor::resized()
 {
     auto bounds = getLocalBounds().reduced (3);
-    auto titleArea = bounds.removeFromTop(40);
+    auto headerArea = bounds.removeFromTop(40);
     
-    // Position preset controls and peak meter
-    const int totalWidth = UIConstants::BUTTON_SIZE + UIConstants::SPACING +
-                          UIConstants::COMBO_BOX_WIDTH + UIConstants::SPACING +
-                          UIConstants::BUTTON_SIZE;
+    // Header layout: Title area | Preset controls | Peak meter
+    const int presetWidth = UIConstants::BUTTON_SIZE + UIConstants::SPACING +
+                           UIConstants::COMBO_BOX_WIDTH + UIConstants::SPACING +
+                           UIConstants::BUTTON_SIZE;
     const int meterWidth = 60;
-    const int spacing = 8;
     
-    auto rightArea = titleArea.removeFromRight(totalWidth + meterWidth + spacing);
-    
-    auto meterArea = rightArea.removeFromRight(meterWidth).reduced(4, 10);
+    // Peak meter area (right side)
+    auto meterArea = headerArea.removeFromRight(meterWidth).reduced(5, 10);
     peakMeter.setBounds(meterArea);
     
-    rightArea.removeFromRight(spacing);
+    // Preset controls area (right-center, next to meter)
+    auto presetControlsBounds = headerArea.removeFromRight(presetWidth).withSizeKeepingCentre(presetWidth, UIConstants::BUTTON_SIZE);
     
-    auto presetControlsArea = rightArea;
+    savePresetButton.setBounds(presetControlsBounds.removeFromLeft(UIConstants::BUTTON_SIZE));
+    presetControlsBounds.removeFromLeft(UIConstants::SPACING);
+    presetComboBox.setBounds(presetControlsBounds.removeFromLeft(UIConstants::COMBO_BOX_WIDTH));
+    presetControlsBounds.removeFromLeft(UIConstants::SPACING);
+    deletePresetButton.setBounds(presetControlsBounds.removeFromLeft(UIConstants::BUTTON_SIZE));
     
-    // Center the controls
-    auto controlsBounds = presetControlsArea.withSizeKeepingCentre(totalWidth, UIConstants::BUTTON_SIZE);
-    
-    savePresetButton.setBounds(controlsBounds.removeFromLeft(UIConstants::BUTTON_SIZE));
-    controlsBounds.removeFromLeft(UIConstants::SPACING);
-
-    presetComboBox.setBounds(controlsBounds.removeFromLeft(UIConstants::COMBO_BOX_WIDTH));
-    controlsBounds.removeFromLeft(UIConstants::SPACING);
-    
-    deletePresetButton.setBounds(controlsBounds.removeFromLeft(UIConstants::BUTTON_SIZE));
+    // Title area is the remaining headerArea (drawn in paint())
 
     auto panelArea = bounds;
     auto transportArea = juce::Rectangle<int>(panelArea.getX() + 15, panelArea.getBottom() - 20, 140, 12);
     transportDisplay.setBounds(transportArea);
     auto area = panelArea.reduced (12);
 
-    constexpr int columns = 4;
-    constexpr int rows = 4;
+    constexpr int columns = 8;
+    constexpr int rows = 2;
     const auto rowHeight = area.getHeight() / rows;
     const auto columnWidth = area.getWidth() / columns;
 
-    auto adsrRowBounds = juce::Rectangle<int>(area.getX(),
-                                               area.getY() + (3 * rowHeight),
-                                               area.getWidth(),
+    auto adsrRowBounds = juce::Rectangle<int>(area.getX() + (4 * columnWidth),
+                                               area.getY() + (1 * rowHeight) + 10,
+                                               4 * columnWidth,
                                                rowHeight - 5);
-    adsrRowBounds = adsrRowBounds.withTrimmedLeft(10).withTrimmedRight(10);
     adsrVisualizer.setBounds(adsrRowBounds);
 
     for (int i = 0; i < (int) controls.size(); ++i)
@@ -343,18 +332,18 @@ void AudioPluginAudioProcessorEditor::resized()
         auto cell = juce::Rectangle<int> (area.getX() + (column * columnWidth),
                                           area.getY() + (row * rowHeight),
                                           columnWidth,
-                                          rowHeight).reduced (10);
+                                          rowHeight);
 
         controls[(size_t) i].label.setBounds (cell.removeFromTop (24));
         controls[(size_t) i].slider.setBounds (cell);
     }
     
-    auto lfoRateSliderBounds = controls[8].slider.getBounds();
+    auto lfoRateSliderBounds = controls[LFO_RATE].slider.getBounds();
     auto syncButtonBounds = juce::Rectangle<int>(
-        lfoRateSliderBounds.getRight() - 40,
-        lfoRateSliderBounds.getBottom() - 18,
-        40,
-        18
+        lfoRateSliderBounds.getX() + 40,
+        lfoRateSliderBounds.getY() + 5,
+        30,
+        10
     );
     lfoSyncButton.setBounds(syncButtonBounds);
 }
