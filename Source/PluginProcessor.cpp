@@ -38,6 +38,7 @@ AudioPluginAudioProcessor::ReeseVoice::ReeseVoice (AudioPluginAudioProcessor& ow
     : owner (ownerProcessor)
 {
     filter.setType (juce::dsp::StateVariableTPTFilterType::lowpass);
+    filter2.setType (juce::dsp::StateVariableTPTFilterType::lowpass);
     updateEnvelope();
 }
 
@@ -106,6 +107,8 @@ void AudioPluginAudioProcessor::ReeseVoice::prepare (double sampleRate, int samp
     spec.numChannels = 1;
     filter.reset();
     filter.prepare (spec);
+    filter2.reset();
+    filter2.prepare (spec);
     updateFilter();
 }
 
@@ -119,8 +122,13 @@ float AudioPluginAudioProcessor::ReeseVoice::getDetunedFrequencyHz() const
 
 void AudioPluginAudioProcessor::ReeseVoice::updateFilter()
 {
-    filter.setCutoffFrequency (owner.getFloatParam ("cutoff"));
-    filter.setResonance (owner.getFloatParam ("resonance"));
+    const auto cutoff = owner.getFloatParam ("cutoff");
+    const auto resonance = owner.getFloatParam ("resonance");
+    
+    filter.setCutoffFrequency (cutoff);
+    filter.setResonance (resonance);
+    filter2.setCutoffFrequency (cutoff);
+    filter2.setResonance (resonance);
 }
 
 void AudioPluginAudioProcessor::ReeseVoice::updateEnvelope()
@@ -240,7 +248,14 @@ float AudioPluginAudioProcessor::ReeseVoice::renderSample()
     const auto modulatedCutoff = juce::jlimit (40.0f, 18000.0f,
                                                owner.getFloatParam ("cutoff") * (1.0f + (0.35f * lfo)));
     filter.setCutoffFrequency (modulatedCutoff);
-    return filter.processSample (0, driven * envelope * level);
+    filter2.setCutoffFrequency (modulatedCutoff);
+    
+    auto filtered = filter.processSample (0, driven * envelope * level);
+    
+    if (owner.getBoolParam ("filter24db"))
+        filtered = filter2.processSample (0, filtered);
+    
+    return filtered;
 }
 
 void AudioPluginAudioProcessor::ReeseVoice::renderNextBlock (juce::AudioBuffer<float>& outputBuffer, int startSample, int numSamples)
@@ -307,6 +322,7 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
     params.push_back (std::make_unique<juce::AudioParameterFloat> ("lfoDepth", "LFO Depth",
                                                                     juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.25f));
     params.push_back (std::make_unique<juce::AudioParameterBool> ("lfoSync", "LFO Sync", false));
+    params.push_back (std::make_unique<juce::AudioParameterBool> ("filter24db", "Filter 24dB", false));
     params.push_back (std::make_unique<juce::AudioParameterChoice> ("lfoSyncRate", "LFO Sync Rate",
                                                                      juce::StringArray {
                                                                          "1/16", "1/16T", "1/16D",

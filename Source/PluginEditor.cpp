@@ -36,6 +36,15 @@ AudioPluginAudioProcessorEditor::AudioPluginAudioProcessorEditor (AudioPluginAud
         processorRef.apvts, "lfoSync", lfoSyncButton);
     addAndMakeVisible(lfoSyncButton);
     
+    filter24dbButton.setButtonText("12dB");
+    filter24dbButton.onClick = [this]()
+    {
+        filter24dbButton.setButtonText(filter24dbButton.getToggleState() ? "24dB" : "12dB");
+    };
+    filter24dbAttachment = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment>(
+        processorRef.apvts, "filter24db", filter24dbButton);
+    addAndMakeVisible(filter24dbButton);
+    
     configureSlider (controls[LFO_DEPTH], "lfoDepth", "LFO DEPTH");
     configureSlider (controls[GLIDE_TIME], "glideTime", "GLIDE");
     configureSlider (controls[OUTPUT], "output", "OUTPUT");
@@ -256,6 +265,17 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
         g.setColour(juce::Colour(0xff2a3f5f).withAlpha(0.5f));
         g.drawLine(dividerArea.getX(), y, dividerArea.getRight(), y, 1.0f);
     }
+    
+    // Vertical divider between LFO DEPTH and ATTACK sliders
+    auto lfoDepthBounds = controls[LFO_DEPTH].slider.getBounds();
+    auto attackBounds = controls[ATTACK].slider.getBounds();
+    auto verticalDividerX = (lfoDepthBounds.getRight() + attackBounds.getX()) / 2;
+    
+    g.setColour(juce::Colour(0xff00d9ff).withAlpha(0.1f));
+    g.drawLine(verticalDividerX, lfoDepthBounds.getY() + 15, verticalDividerX, lfoDepthBounds.getBottom() - 15, 2.0f);
+    
+    g.setColour(juce::Colour(0xff2a3f5f).withAlpha(0.5f));
+    g.drawLine(verticalDividerX, lfoDepthBounds.getY() + 15, verticalDividerX, lfoDepthBounds.getBottom() - 15, 1.0f);
 
     // Corner accents
     auto drawCornerAccent = [&](float x, float y, bool flipX, bool flipY)
@@ -350,6 +370,15 @@ void AudioPluginAudioProcessorEditor::resized()
         10
     );
     lfoSyncButton.setBounds(syncButtonBounds);
+    
+    auto cutoffSliderBounds = controls[CUTOFF].slider.getBounds();
+    auto filter24dbButtonBounds = juce::Rectangle<int>(
+        cutoffSliderBounds.getX() + 40,
+        cutoffSliderBounds.getY() + 5,
+        30,
+        10
+    );
+    filter24dbButton.setBounds(filter24dbButtonBounds);
 }
 
 

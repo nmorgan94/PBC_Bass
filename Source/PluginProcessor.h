@@ -90,6 +90,7 @@ private:
         juce::ADSR ampEnvelope;
         juce::ADSR::Parameters ampEnvelopeParameters;
         juce::dsp::StateVariableTPTFilter<float> filter;
+        juce::dsp::StateVariableTPTFilter<float> filter2;
         double currentSampleRate { 44100.0 };
         float level { 0.0f };
         float baseFrequencyHz { 110.0f };

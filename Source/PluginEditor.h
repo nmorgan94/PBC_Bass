@@ -76,6 +76,9 @@ private:
     juce::ToggleButton lfoSyncButton;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> lfoSyncAttachment;
     
+    juce::ToggleButton filter24dbButton;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> filter24dbAttachment;
+    
     void updatePresetComboBox();
     void savePresetClicked();
     void deletePresetClicked();
