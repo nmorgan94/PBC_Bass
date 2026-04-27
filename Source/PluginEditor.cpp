@@ -121,7 +121,13 @@ void AudioPluginAudioProcessorEditor::updateSliderLabel (SliderWithAttachment& s
     else if (paramID == "lfoSyncRate")
     {
         const int syncRateValue = (int)sliderControl.slider.getValue();
-        const char* syncRateNames[] = { "1/16", "1/8", "1/4", "1/2", "1 BAR", "2 BARS", "4 BARS" };
+        const char* syncRateNames[] = {
+            "1/16", "1/16T", "1/16D",
+            "1/8", "1/8T", "1/8D",
+            "1/4", "1/4T", "1/4D",
+            "1/2", "1/2T", "1/2D",
+            "1 BAR", "2 BARS", "4 BARS"
+        };
         sliderControl.label.setText(syncRateNames[syncRateValue], juce::dontSendNotification);
     }
     else
@@ -278,7 +284,7 @@ void AudioPluginAudioProcessorEditor::paint (juce::Graphics& g)
     // Version text in bottom-right corner
     g.setFont(CustomLookAndFeel::orbitronRegular().withPointHeight(9.0f));
     g.setColour(juce::Colour(0xff00d9ff).withAlpha(0.4f));
-    auto versionArea = juce::Rectangle<int>(panelBounds.getRight() - 60, panelBounds.getBottom() - 20, 50, 12);
+    auto versionArea = juce::Rectangle<int>(panelBounds.getRight() - 60, panelBounds.getBottom() - 23, 50, 12);
     g.drawText("v" + juce::String(JucePlugin_VersionString), versionArea, juce::Justification::centredRight);
 }
 
@@ -293,11 +299,9 @@ void AudioPluginAudioProcessorEditor::resized()
                            UIConstants::BUTTON_SIZE;
     const int meterWidth = 60;
     
-    // Peak meter area (right side)
     auto meterArea = headerArea.removeFromRight(meterWidth).reduced(5, 10);
     peakMeter.setBounds(meterArea);
     
-    // Preset controls area (right-center, next to meter)
     auto presetControlsBounds = headerArea.removeFromRight(presetWidth).withSizeKeepingCentre(presetWidth, UIConstants::BUTTON_SIZE);
     
     savePresetButton.setBounds(presetControlsBounds.removeFromLeft(UIConstants::BUTTON_SIZE));
@@ -309,7 +313,7 @@ void AudioPluginAudioProcessorEditor::resized()
     // Title area is the remaining headerArea (drawn in paint())
 
     auto panelArea = bounds;
-    auto transportArea = juce::Rectangle<int>(panelArea.getX() + 15, panelArea.getBottom() - 20, 140, 12);
+    auto transportArea = juce::Rectangle<int>(panelArea.getX() + 15, panelArea.getBottom() - 23, 140, 12);
     transportDisplay.setBounds(transportArea);
     auto area = panelArea.reduced (12);
 
@@ -321,7 +325,7 @@ void AudioPluginAudioProcessorEditor::resized()
     auto adsrRowBounds = juce::Rectangle<int>(area.getX() + (4 * columnWidth),
                                                area.getY() + (1 * rowHeight) + 10,
                                                4 * columnWidth,
-                                               rowHeight - 5);
+                                               rowHeight - 15);
     adsrVisualizer.setBounds(adsrRowBounds);
 
     for (int i = 0; i < (int) controls.size(); ++i)

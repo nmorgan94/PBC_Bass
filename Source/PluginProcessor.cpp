@@ -145,8 +145,25 @@ float AudioPluginAudioProcessor::ReeseVoice::getLFORate() const
     
     const int syncRateIndex = owner.getChoiceParam ("lfoSyncRate");
     
-    // Note divisions: 1/16, 1/8, 1/4, 1/2, 1 Bar, 2 Bars, 4 Bars
-    const float beatsPerCycle[] = { 0.25f, 0.5f, 1.0f, 2.0f, 4.0f, 8.0f, 16.0f };
+    // Beats per cycle for each timing option
+    // T = Triplet (2/3 of normal), D = Dotted (1.5x normal)
+    const float beatsPerCycle[] = {
+        0.25f,                  // 1/16
+        0.25f * 2.0f / 3.0f,    // 1/16T
+        0.25f * 1.5f,           // 1/16D
+        0.5f,                   // 1/8
+        0.5f * 2.0f / 3.0f,     // 1/8T
+        0.5f * 1.5f,            // 1/8D
+        1.0f,                   // 1/4
+        1.0f * 2.0f / 3.0f,     // 1/4T
+        1.0f * 1.5f,            // 1/4D
+        2.0f,                   // 1/2
+        2.0f * 2.0f / 3.0f,     // 1/2T
+        2.0f * 1.5f,            // 1/2D
+        4.0f,                   // 1 Bar
+        8.0f,                   // 2 Bars
+        16.0f                   // 4 Bars
+    };
     const float beats = beatsPerCycle[syncRateIndex];
     
     return static_cast<float>((bpm / 60.0) / beats);
@@ -291,7 +308,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout AudioPluginAudioProcessor::c
                                                                     juce::NormalisableRange<float> (0.0f, 1.0f, 0.001f), 0.25f));
     params.push_back (std::make_unique<juce::AudioParameterBool> ("lfoSync", "LFO Sync", false));
     params.push_back (std::make_unique<juce::AudioParameterChoice> ("lfoSyncRate", "LFO Sync Rate",
-                                                                     juce::StringArray { "1/16", "1/8", "1/4", "1/2", "1 Bar", "2 Bars", "4 Bars" }, 2));
+                                                                     juce::StringArray {
+                                                                         "1/16", "1/16T", "1/16D",
+                                                                         "1/8", "1/8T", "1/8D",
+                                                                         "1/4", "1/4T", "1/4D",
+                                                                         "1/2", "1/2T", "1/2D",
+                                                                         "1 Bar", "2 Bars", "4 Bars"
+                                                                     }, 6));
     params.push_back (std::make_unique<juce::AudioParameterFloat> ("glideTime", "Glide Time",
                                                                     juce::NormalisableRange<float> (0.0f, 2.0f, 0.001f, 0.5f), 0.0f));
     params.push_back (std::make_unique<juce::AudioParameterInt> ("unisonVoices", "Unison Voices",
